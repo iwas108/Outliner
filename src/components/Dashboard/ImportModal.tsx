@@ -247,10 +247,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
           {/* Error Status */}
           {status === 'error' && (
-            <div className="flex flex-col items-center justify-center py-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-xl px-4 text-center">
+            <div className="flex flex-col items-center justify-center py-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40 rounded-xl px-4 text-center">
               <AlertCircle className="w-6 h-6 text-rose-500 mb-1.5" />
-              <span className="text-xs font-bold text-rose-700 dark:text-rose-400">Import Error</span>
-              <span className="text-[11px] text-rose-600 dark:text-rose-350/90 mt-1 leading-relaxed">
+              <span className="text-xs font-bold text-rose-700 dark:text-rose-300">Import Error</span>
+              <span className="text-[11px] text-rose-600 dark:text-rose-200 mt-1 leading-relaxed">
                 {errorMessage}
               </span>
               <button
@@ -258,7 +258,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                   setStatus('idle');
                   setFile(null);
                 }}
-                className="mt-3 text-[10px] font-bold text-purple-650 dark:text-purple-400 hover:underline"
+                className="mt-3 text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:underline"
               >
                 Try Another File
               </button>
@@ -271,7 +271,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-850 border border-slate-350 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
             Close
           </button>

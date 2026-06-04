@@ -109,3 +109,13 @@ This log records features, fixes, and architectural adjustments completed on the
 - **Relocated Application Shell**: Moved the React application shell `index.html` to `app/index.html` and adjusted its script source pointing to the entrypoint to `../src/main.tsx`. Added standard SEO and Open Graph metatags with the Open Graph preview image set to the absolute URL pointing to `Outliner_editing_page.jpg` on GitHub Pages.
 - **Vite Configuration Path Remappings**: Adjusted `vite.config.ts` to set `root: 'app'`, `base: './'` (relative paths), `publicDir: '../public'`, and `build.outDir: '../dist'` to compile the application bundle and assets into `dist/` relative to the project root directory.
 - **Root Marketing Landing Page**: Created a beautiful landing page at the project root `index.html` using Tailwind CSS via CDN. Styled it with Outfit Google Fonts, radial gradients, glassmorphism dividers, and a responsive grid displaying the six documentation screenshots from `docs/images/` with premium captions. The copy leverages project markdown files to promote privacy-first offline operation (saving strictly to browser IndexedDB), FAIR data standards alignment, open-source codebase links, AI critiques, and custom PDF templates.
+
+### 19. Theme Contrast Corrections (June 4, 2026)
+- **Resolved Close Button Disappearance**: Swapped the non-standard `slate-850`, `rose-350`, and `purple-650` classes in `ImportModal.tsx` for standard Tailwind values (`slate-800`, `rose-300`, `purple-600`), resolving the visual bug where the Close button background was rendered as white with white text under dark theme.
+- **Header Commit Text Contrast**: Corrected the commit subtitle text color inside `OutlineIDE.tsx` from `dark:text-slate-500` to standard `dark:text-slate-400` to make it stand out.
+- **Critique Board Colors**: Bound standard `dark:text-slate-*` color properties to Section, Topic, Question, and Answer nodes in `ReviewView.tsx`, resolving the visual bug where outline lines were unreadable in dark mode. Cleared all remaining invalid `border-slate-850` instances.
+
+### 20. Expandable Textarea Editor in Review Mode (June 4, 2026)
+- **Single-Click Editing Trigger**: Configured the critique canvas lines inside `ReviewView.tsx` to automatically enter editing mode on a single click, providing a unified editing experience.
+- **Auto-Growing Textareas**: Swapped the single-line text `<input>` with an auto-resizing `<textarea>` that matches the parent node height, preventing text clipping and allowing the user to read entire paragraphs while typing.
+- **Propagation Controls**: Stopped click bubbling inside active textareas to avoid caret positioning resets.

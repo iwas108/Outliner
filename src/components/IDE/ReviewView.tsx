@@ -165,13 +165,13 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
       
       {/* Left Pane: Critique Reading Surface */}
       <div className="flex-grow min-w-0 flex flex-col gap-4">
-        <div className="glass rounded-3xl border border-slate-200 dark:border-slate-850 p-6 flex flex-col gap-4 bg-white dark:bg-slate-950/40 min-h-[500px]">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-4">
+        <div className="glass rounded-3xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-4 bg-white dark:bg-slate-950/40 min-h-[500px]">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
             <div>
-              <h2 className="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 Outline Critique Canvas
               </h2>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-mono mt-0.5">
                 Double-click text to modify outline contents directly in review mode
               </p>
             </div>
@@ -200,17 +200,17 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                 const hasComments = reviewsByLine[node.id] && reviewsByLine[node.id].length > 0;
                 const isFocused = focusedLineId === node.id;
 
-                let nodeStyle = 'font-normal text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-900/40';
+                let nodeStyle = 'font-normal text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/40';
                 let prefix = '';
                 if (node.type === 'section') {
-                  nodeStyle = 'font-black text-slate-900 border-b border-slate-100 dark:border-slate-850/60 pb-1 mt-3 hover:bg-slate-50 dark:hover:bg-slate-900/40';
+                  nodeStyle = 'font-black text-slate-900 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800/80 pb-1 mt-3 hover:bg-slate-50 dark:hover:bg-slate-900/40';
                 } else if (node.type === 'topic') {
-                  nodeStyle = 'font-bold text-slate-800 mt-1.5 hover:bg-slate-50 dark:hover:bg-slate-900/40';
+                  nodeStyle = 'font-bold text-slate-800 dark:text-slate-200 mt-1.5 hover:bg-slate-50 dark:hover:bg-slate-900/40';
                 } else if (node.type === 'question') {
-                  nodeStyle = 'font-semibold text-slate-850';
+                  nodeStyle = 'font-semibold text-slate-700 dark:text-slate-300';
                   prefix = 'Q: ';
                 } else if (node.type === 'answer') {
-                  nodeStyle = 'font-normal text-slate-600';
+                  nodeStyle = 'font-normal text-slate-600 dark:text-slate-400';
                   prefix = 'A: ';
                 }
 
@@ -218,7 +218,10 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                   <div
                     key={node.id}
                     ref={(el) => { lineRefs.current[node.id] = el; }}
-                    onClick={() => setFocusedLineId(node.id)}
+                    onClick={() => {
+                      setFocusedLineId(node.id);
+                      handleStartEditing(node);
+                    }}
                     className={`group relative flex items-center gap-3 px-3 py-2 rounded-xl transition-all border ${
                       isFocused 
                         ? 'bg-purple-50/50 dark:bg-purple-950/10 border-purple-500/40 shadow-sm' 
@@ -228,29 +231,43 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                       marginLeft: `${node.depth * 20}px`,
                     }}
                   >
-                    <span className="text-[10px] font-mono text-slate-450 dark:text-slate-550 select-none shrink-0 w-5">
+                    <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 select-none shrink-0 w-5">
                       {prefix}
                     </span>
 
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <textarea
                         autoFocus
                         value={editingText}
                         onChange={(e) => setEditingText(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
                         onBlur={() => handleSaveInlineEdit(node.id)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveInlineEdit(node.id);
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSaveInlineEdit(node.id);
+                          }
                           if (e.key === 'Escape') setEditingNodeId(null);
                         }}
-                        className="flex-grow px-2 py-0.5 bg-white dark:bg-slate-950 border border-purple-500 rounded text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 text-slate-900 dark:text-slate-100"
+                        rows={1}
+                        onInput={(e) => {
+                          const el = e.currentTarget;
+                          el.style.height = 'auto';
+                          el.style.height = `${el.scrollHeight}px`;
+                        }}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = 'auto';
+                            el.style.height = `${el.scrollHeight}px`;
+                          }
+                        }}
+                        className="flex-grow px-2 py-1 bg-white dark:bg-slate-950 border border-purple-500 rounded text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 text-slate-900 dark:text-slate-100 resize-none overflow-hidden"
                       />
                     ) : (
                       <div 
-                        onDoubleClick={() => handleStartEditing(node)}
                         className="flex-grow text-xs leading-relaxed break-words cursor-pointer"
                       >
-                        {node.text || <span className="text-slate-300 dark:text-slate-700 italic select-none">(Double-click to insert content)</span>}
+                        {node.text || <span className="text-slate-350 dark:text-slate-600 italic select-none">(Click to insert content)</span>}
                       </div>
                     )}
 
@@ -258,7 +275,10 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                     <div className="flex items-center gap-2 shrink-0">
                       {hasComments && (
                         <button
-                          onClick={() => handleCommentCardClick(node.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommentCardClick(node.id);
+                          }}
                           className="flex items-center justify-center p-1 bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/30 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer"
                           title={`${reviewsByLine[node.id].length} unresolved comment(s)`}
                         >
@@ -269,7 +289,10 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                       
                       {!isEditing && (
                         <button
-                          onClick={() => handleStartEditing(node)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartEditing(node);
+                          }}
                           className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-opacity"
                           title="Edit Line"
                         >
@@ -289,9 +312,9 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
       <div className="w-full md:w-80 shrink-0 flex flex-col gap-6">
         
         {/* Critique comments card */}
-        <div className="glass rounded-3xl p-5 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 bg-white dark:bg-slate-950/40">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2.5">
-            <h3 className="text-xs font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+        <div className="glass rounded-3xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 bg-white dark:bg-slate-950/40">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-500" />
               Critique Feed
             </h3>
@@ -311,7 +334,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
               <div className="py-8 text-center text-slate-400 text-xs italic flex flex-col items-center gap-1.5">
                 <CheckCircle className="w-6 h-6 text-slate-300 dark:text-slate-700" />
                 No unresolved comments.
-                <span className="text-[9px] font-mono not-italic block text-slate-350 dark:text-slate-550 mt-1">Paste a critique JSON above to begin</span>
+                <span className="text-[9px] font-mono not-italic block text-slate-400 dark:text-slate-500 mt-1">Paste a critique JSON above to begin</span>
               </div>
             ) : (
               activeReviews.map((comment) => {
@@ -320,7 +343,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                   <div
                     key={comment.id}
                     onClick={() => handleCommentCardClick(comment.lineId)}
-                    className="p-3 bg-slate-50 dark:bg-slate-950/50 hover:bg-purple-50/20 dark:hover:bg-purple-950/10 border border-slate-200 dark:border-slate-850 rounded-2xl flex flex-col gap-2 cursor-pointer transition-all hover:shadow-sm"
+                    className="p-3 bg-slate-50 dark:bg-slate-950/50 hover:bg-purple-50/20 dark:hover:bg-purple-950/10 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col gap-2 cursor-pointer transition-all hover:shadow-sm"
                   >
                     <div className="text-[9px] text-slate-400 font-mono truncate border-b border-slate-200/50 dark:border-slate-800/60 pb-1">
                       Context: &quot;{nodeText}&quot;
@@ -346,16 +369,16 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
         </div>
 
         {/* Git-like revision snapshots timeline */}
-        <div className="glass rounded-3xl p-5 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 bg-white dark:bg-slate-950/40">
-          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-2.5">
-            <h3 className="text-xs font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+        <div className="glass rounded-3xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 bg-white dark:bg-slate-950/40">
+          <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
               <GitCommit className="w-4 h-4 text-purple-500" />
               Version Timeline
             </h3>
 
             <button
               onClick={() => setShowCommitModal(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[10px] font-bold transition-all shadow-sm group"
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-[10px] font-bold transition-all shadow-sm group"
             >
               <GitBranch className="w-3.5 h-3.5 text-purple-550 group-hover:scale-110 transition-transform" />
               Commit
@@ -388,7 +411,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                       <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono">
                         {fullDate} @ {date}
                       </span>
-                      <span className="text-[8px] font-mono px-1 rounded bg-slate-100 dark:bg-slate-850 text-slate-400">
+                      <span className="text-[8px] font-mono px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
                         {commit.nodesSnapshot.length} lines
                       </span>
                     </div>
@@ -445,17 +468,17 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 flex flex-col gap-4">
             <div>
-              <h3 className="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-wide flex items-center gap-2">
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wide flex items-center gap-2">
                 <GitBranch className="w-4 h-4 text-emerald-500" />
                 Fork New Project
               </h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-mono mt-0.5">
                 Create a duplicate project copy from this snapshot
               </p>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 New Project Title *
               </label>
               <input
@@ -464,7 +487,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
                 value={forkTitle}
                 onChange={(e) => setForkTitle(e.target.value)}
                 placeholder="Enter copied outline title"
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-350 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-xs focus:ring-2 focus:ring-purple-500 outline-none"
               />
             </div>
 
@@ -472,7 +495,7 @@ export const ReviewView: React.FC<ReviewViewProps> = ({
               <button
                 type="button"
                 onClick={() => setForkingCommit(null)}
-                className="px-3.5 py-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-200 rounded-lg transition-all shadow-sm"
+                className="px-3.5 py-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-[10px] font-bold text-slate-700 dark:text-slate-200 rounded-lg transition-all shadow-sm"
               >
                 Cancel
               </button>

@@ -167,10 +167,10 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
             <span className="hidden sm:inline">Back to Dashboard</span>
           </button>
           <div>
-            <h1 className="text-lg font-black text-slate-850 dark:text-slate-100 flex items-center gap-2">
+            <h1 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
               {project.title}
             </h1>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
+            <p className="text-[10px] text-slate-400 dark:text-slate-400 font-mono mt-0.5">
               Commit: {project.commits && project.commits.length > 0
                 ? `"${project.commits[0].comment}" (${new Date(project.commits[0].timestamp).toLocaleDateString()})`
                 : 'No snapshots committed yet'}
