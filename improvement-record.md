@@ -119,3 +119,13 @@ This log records features, fixes, and architectural adjustments completed on the
 - **Single-Click Editing Trigger**: Configured the critique canvas lines inside `ReviewView.tsx` to automatically enter editing mode on a single click, providing a unified editing experience.
 - **Auto-Growing Textareas**: Swapped the single-line text `<input>` with an auto-resizing `<textarea>` that matches the parent node height, preventing text clipping and allowing the user to read entire paragraphs while typing.
 - **Propagation Controls**: Stopped click bubbling inside active textareas to avoid caret positioning resets.
+
+### 21. Vite Dev Server Resolution & GitHub Pages Build Flow (June 4, 2026)
+- **Vite Root Resolution**: Restored the project root as the default root for the Vite development server, removing `root: 'app'` to prevent path loading issues during local runs.
+- **Dedicated Application Entrypoint**: Created a dedicated `app.html` entry point at the project root which links directly to absolute `/src/main.tsx` React assets.
+- **Post-Build Relative Bundle Support**: Configured base path to `./` and rollup settings inside `vite.config.ts`. Updated the `build` script in `package.json` to compile the app and rename the output from `dist/app.html` to `dist/index.html`. This keeps assets relative and compatible with subfolder deployments on GitHub Pages.
+
+### 22. Comprehensive README Documentation (June 4, 2026)
+- **Professional Overview**: Replaced the brief `README.md` file with a comprehensive document describing project goals, logical rules, structural analyzers, checkpoint timeline versions, and exports layout formats.
+- **Offline Guidelines**: Integrated detailed steps to guide users on running the application standalone on their laptops, explaining how the client-side IndexedDB is isolated and details on running a local Vite server.
+
