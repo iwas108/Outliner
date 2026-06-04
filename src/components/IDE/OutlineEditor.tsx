@@ -106,11 +106,11 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   useEffect(() => {
     if (focusedIndex !== null && nodes[focusedIndex]) {
       const targetNode = nodes[focusedIndex];
-      
+
       // 1. Check if any parent needs to be expanded
       let parentTopicId: string | null = null;
       let parentSectionId: string | null = null;
-      
+
       for (let i = focusedIndex - 1; i >= 0; i--) {
         const node = nodes[i];
         if (node.type === 'section' && !parentSectionId) {
@@ -163,7 +163,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
 
   const handleIndent = (index: number) => {
     if (!canIndent(nodes, index, maxDepth)) return;
-    
+
     const updated = [...nodes];
     const node = { ...updated[index] };
     node.depth += 1;
@@ -283,12 +283,12 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
       e.preventDefault();
       // Add smart next sibling
       let nextType: 'section' | 'topic' | 'question' | 'answer' = currentNode.type;
-      
+
       // Smart type guessing
       if (currentNode.type === 'section') nextType = 'topic';
       else if (currentNode.type === 'topic') nextType = 'question';
       else if (currentNode.type === 'question') nextType = 'answer';
-      
+
       handleAddSiblingNode(index, nextType);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -316,14 +316,14 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
 
   const renderFloatingDock = () => {
     return (
-      <div 
+      <div
         onMouseDown={(e) => e.stopPropagation()}
         className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 select-none"
       >
         {/* Expanded Warning Popup */}
         {!isCollapsed && totalWarnings > 0 && (
           <div
-          className="w-80 max-h-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200/80 dark:border-slate-800/60 rounded-2xl shadow-2xl p-4 flex flex-col gap-2 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200"
+            className="w-80 max-h-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200/80 dark:border-slate-800/60 rounded-2xl shadow-2xl p-4 flex flex-col gap-2 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200"
           >
             <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-550">
@@ -411,11 +411,10 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
           <button
             type="button"
             onClick={() => onColorTaggingToggle?.(!colorTaggingEnabled)}
-            className={`p-2 rounded-xl border transition-all cursor-pointer ${
-              colorTaggingEnabled
+            className={`p-2 rounded-xl border transition-all cursor-pointer ${colorTaggingEnabled
                 ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/40 text-purple-600 dark:text-purple-400'
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-650'
-            }`}
+              }`}
             title={colorTaggingEnabled ? 'Disable Color Highlights' : 'Enable Color Highlights'}
           >
             {colorTaggingEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
@@ -425,11 +424,10 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
           <button
             type="button"
             onClick={() => onShowStructureLineToggle?.(!showStructureLine)}
-            className={`p-2 rounded-xl border transition-all cursor-pointer ${
-              showStructureLine
+            className={`p-2 rounded-xl border transition-all cursor-pointer ${showStructureLine
                 ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/40 text-purple-600 dark:text-purple-400'
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-650'
-            }`}
+              }`}
             title={showStructureLine ? 'Hide Structure Lines' : 'Show Structure Lines'}
           >
             <ListTree className="w-4 h-4" />
@@ -443,13 +441,12 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                 setDiagnosticsCollapsed(!isCollapsed);
               }
             }}
-            className={`px-3 py-1.5 rounded-xl border font-bold text-xs transition-all flex items-center gap-1.5 ${
-              totalWarnings === 0
+            className={`px-3 py-1.5 rounded-xl border font-bold text-xs transition-all flex items-center gap-1.5 ${totalWarnings === 0
                 ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-default'
                 : isCollapsed
-                ? 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 text-amber-600 dark:text-amber-400 cursor-pointer shadow-sm'
-                : 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 cursor-pointer shadow-inner'
-            }`}
+                  ? 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 text-amber-600 dark:text-amber-400 cursor-pointer shadow-sm'
+                  : 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 cursor-pointer shadow-inner'
+              }`}
           >
             {totalWarnings === 0 ? (
               <>
@@ -484,7 +481,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
       {/* Editor Sheet header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-slate-800 pb-6 mb-8 gap-4 select-none">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-350 dark:text-slate-600">
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-200">
             Document Outline Sheet
           </span>
           {isFullscreen && nodes.length > 0 && (
@@ -563,7 +560,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
               />
             );
           })}
-          
+
           <button
             onClick={handleAddSectionAtBottom}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-slate-300 dark:border-slate-700 hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 rounded-xl text-xs font-semibold text-slate-500 dark:text-slate-400 transition-all w-fit mt-3 self-center sm:self-start cursor-pointer"

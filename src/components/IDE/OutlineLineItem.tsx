@@ -68,10 +68,10 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
         node.type === 'section'
           ? 'Enter Section title...'
           : node.type === 'topic'
-          ? 'Enter Topic title...'
-          : node.type === 'question'
-          ? 'Enter Question formulation...'
-          : 'Enter Answer details...';
+            ? 'Enter Topic title...'
+            : node.type === 'question'
+              ? 'Enter Question formulation...'
+              : 'Enter Answer details...';
       return <span className="text-slate-350 dark:text-slate-650 italic font-normal">{placeholder}</span>;
     }
 
@@ -105,7 +105,7 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
       case 'question':
         return 'italic text-sm text-purple-700 dark:text-purple-400 font-medium';
       case 'answer':
-        return 'text-sm text-slate-600 dark:text-slate-350';
+        return 'text-sm text-slate-600 dark:text-slate-200';
       default:
         return 'text-sm';
     }
@@ -135,16 +135,15 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
   return (
     <div
       onMouseDown={(e) => e.stopPropagation()}
-      className={`group relative flex items-start w-full px-3 rounded-lg border transition-all duration-150 ${
-        isActive
-          ? 'bg-slate-100/75 dark:bg-slate-900/60 border-purple-500/35 dark:border-purple-550/25 shadow-sm'
-          : 'bg-transparent border-transparent hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
-      }`}
-      style={{ 
-        paddingLeft: `${computedIndent}px`, 
-        paddingTop: `${editorLineSpacing * 4}px`, 
-        paddingBottom: `${editorLineSpacing * 4}px`, 
-        lineHeight: `${editorLineHeight}` 
+      className={`group relative flex items-start w-full px-3 rounded-lg border transition-all duration-150 ${isActive
+        ? 'bg-slate-100/75 dark:bg-slate-900/60 border-purple-500/35 dark:border-purple-550/25 shadow-sm'
+        : 'bg-transparent border-transparent hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
+        }`}
+      style={{
+        paddingLeft: `${computedIndent}px`,
+        paddingTop: `${editorLineSpacing * 4}px`,
+        paddingBottom: `${editorLineSpacing * 4}px`,
+        lineHeight: `${editorLineHeight}`
       }}
     >
       {/* Visual Nesting Guide Lines */}
@@ -221,10 +220,10 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
               node.type === 'section'
                 ? 'Enter Section title...'
                 : node.type === 'topic'
-                ? 'Enter Topic title...'
-                : node.type === 'question'
-                ? 'Enter Question formulation...'
-                : 'Enter Answer details...'
+                  ? 'Enter Topic title...'
+                  : node.type === 'question'
+                    ? 'Enter Question formulation...'
+                    : 'Enter Answer details...'
             }
             className={`flex-grow bg-transparent border-none outline-none focus:ring-0 w-full resize-none overflow-hidden placeholder-slate-350 dark:placeholder-slate-650 ${getLineStyles()}`}
             style={{ lineHeight: `${editorLineHeight}` }}
@@ -240,10 +239,10 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
                 {node.type === 'section'
                   ? 'Enter Section title...'
                   : node.type === 'topic'
-                  ? 'Enter Topic title...'
-                  : node.type === 'question'
-                  ? 'Enter Question formulation...'
-                  : 'Enter Answer details...'}
+                    ? 'Enter Topic title...'
+                    : node.type === 'question'
+                      ? 'Enter Question formulation...'
+                      : 'Enter Answer details...'}
               </span>
             )}
           </div>
