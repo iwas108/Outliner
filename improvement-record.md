@@ -1,0 +1,82 @@
+# Outliner Application Improvement Record
+
+This log records features, fixes, and architectural adjustments completed on the Outliner application.
+
+---
+
+## Completed Improvements
+
+### 1. Epoch 1: Scaffolding, Theme Configuration & Local Database Wrapper
+- **Scaffolding**: Created Vite + React + TypeScript + Tailwind CSS template configured to deploy static builds at `/Outliner/` base paths for GitHub Pages.
+- **Database Engine ([indexedDB.ts](file:///home/madman/github/Outliner/src/db/indexedDB.ts))**: Built clean Promise-based async IndexedDB wrappers handling database setup, config storage (`config` store), and project document records (`projects` store).
+- **Theme Provider ([ThemeContext.tsx](file:///home/madman/github/Outliner/src/context/ThemeContext.tsx))**: Created React context manager persisting system, light, and dark theme choices inside IndexedDB config.
+
+### 2. Epoch 2: Project Dashboard & Backups Management
+- **Dashboard Hub ([Dashboard.tsx](file:///home/madman/github/Outliner/src/components/Dashboard/Dashboard.tsx))**: Designed a dashboard listing projects, metadata (creation/modification dates), and project details in a premium tabular view.
+- **Backups & Imports**: Implemented `.otln-project` JSON backup files to import and export entire project workspaces, and `.otln` schema formats to load outline structures.
+
+### 3. Epoch 3: Outline IDE Core & Indent Constraint Engine
+- **Line Editor Widget ([OutlineLineItem.tsx](file:///home/madman/github/Outliner/src/components/IDE/OutlineLineItem.tsx))**: Created floating action buttons for lines to trigger indents, deletions, and structural conversions.
+- **Constraint Engine ([outlineRules.ts](file:///home/madman/github/Outliner/src/utils/outlineRules.ts))**: Enforces hierarchical rules: Section -> Topic -> Question -> Answer. Prevents invalid indent/outdent states.
+- **Editor Canvas ([OutlineEditor.tsx](file:///home/madman/github/Outliner/src/components/IDE/OutlineEditor.tsx))**: Intercepts keyboard events (`Tab` / `Shift+Tab` for indentation shifts, `ArrowUp` / `ArrowDown` for caret focus navigating, `Enter` for splitting new nodes) with debounced autosaving to IndexedDB.
+
+### 4. Epoch 4: Analysis Sidebar & Keyword Highlights Overlay
+- **Validator Engine ([analyzer.ts](file:///home/madman/github/Outliner/src/utils/analyzer.ts))**: Tokenizes outline texts, parses 5W1H query syntax, checks keyword continuity chaining across related elements, and hashes consistent keyword HSL colors.
+- **Warning Panel ([AnalysisSidebar.tsx](file:///home/madman/github/Outliner/src/components/IDE/AnalysisSidebar.tsx))**: Renders a warning cards list. Clicking warnings scrolls and focuses the corresponding line inside the editor canvas.
+- **Keyword Highlighter Overlay**: Splits unfocused outline nodes using regex content tokens, wrapping repeats in matching HSL colored highlight badges on the page sheet.
+
+### 5. Epoch 5: Workflow Tabs & PDF Layout Print Engine
+- **Workflow Navigation**: Refactored the coordinator to support tab transitions (`Metadata` | `Editing` | `Export` | `Review`).
+- **Visual Mockups Panel ([ExportView.tsx](file:///home/madman/github/Outliner/src/components/IDE/ExportView.tsx))**: Renders a paper sheet layout showing changes to margins (0-50mm), orientations, and sizes (A4, Letter, A5, Legal) in real-time.
+- **Native Print Engine ([pdfPrinter.ts](file:///home/madman/github/Outliner/src/utils/pdfPrinter.ts))**: Spawns a hidden DOM iframe, injects a print-specific `@page` rule mapping layout metrics, and triggers `window.print()` to output clean vector PDFs.
+- **LLM Review Prompter**: Generates custom prompts containing research questions and structured outline nodes alongside TS response formats.
+
+### 6. Epoch 6: Critique Paste Overlays & Git-like Snapshots Timeline
+- **Feedback Comments Gutter ([ReviewView.tsx](file:///home/madman/github/Outliner/src/components/IDE/ReviewView.tsx))**: Reviews are rendered on a split canvas. The left side highlights nodes having critiques, enabling inline double-click editing. The right gutter sidebar feeds active comment cards with mark-solved actions.
+- **Paste Schema Validator ([PasteReviewModal.tsx](file:///home/madman/github/Outliner/src/components/IDE/PasteReviewModal.tsx))**: Validates inputted LLM critique JSON arrays against node UUID keys, discarding orphan data.
+- **Snapshot Timeline ([CommitTimeline.tsx](file:///home/madman/github/Outliner/src/components/IDE/ReviewView.tsx))**: Saves snapshots of nodes and metadata with comments. Allows rolling back outlines to checkpoints, or cloning/forking snapshots into new duplicate outline projects.
+
+### 7. Custom Enhancements & Bug Fixes (June 3, 2026)
+- **Whitespace Spacing Fix**: Resolved an issue where words in unfocused outline line items collapsed and displayed without spacing by changing the parent container from a flex-wrap layout to standard `whitespace-pre-wrap` block spacing.
+- **Color Tagging Styles**: Transformed repeated keyword highlight badges from fill backgrounds to elegant outline borders utilizing active HSL values.
+- **Add Section at Bottom**: Added a dashed `+ Add Section at Bottom` trigger button to the end of the Document Outline Sheet list to quickly append section headers.
+- **Line Movement Operations**: Added `ArrowUp` (Move Up) and `ArrowDown` (Move Down) buttons to outline line item floating toolbars, enabling immediate line swapping while preserving indentation.
+- **Dynamic Indentation Levels**: Scaled standard levels to a default limit of 12 (depths 0-11) with case-alternating rules and added a customization selector in the project metadata form to alter levels up to 20.
+- **Header Commit State Display**: Swapped project writing goal headers with a live display of the latest commit checkpoint description and date.
+
+### 8. Collapsible Warnings, Fullscreen & Advanced Spacings (June 3, 2026)
+- **Highlighter Style Keywords**: Refactored keyword overlay displays from border outline spans to filled HSL highlights using background colors (`style={{ backgroundColor: bg, color: fg }}`) to increase legibility and save outline contrast space.
+- **Keyboard Sorting Shortcuts**: Enabled `Alt + ArrowUp` and `Alt + ArrowDown` key listeners inside the outline editor to trigger moving line items up and down. Updated the editor bar instructions accordingly.
+- **Fullscreen Mode Backdrop**: Designed a header toggle button to scale the Document Outline Sheet to a roomy `max-w-5xl` fixed overlay view.
+- **Floating Controls & Diagnostics**: In fullscreen mode, rendered a bottom-right dock allowing color highlight toggling, exiting fullscreen, and viewing active issues in a collapsible diagnostics panel that opens uncollapsed on unresolved errors and is manually collapsible.
+- **Per-Level Spacing & Highlights Overrides**: Expanded the project metadata schema to store level-specific highlights toggle, line spacing heights, and absolute indentation margins in mm. Built a sidebar collapsible settings list in the Export page and wired overrides to mockup previews and iframe PDF rendering templates.
+
+### 9. Layout Adjustments & Sticky Modules (June 3, 2026)
+- **Overlap Prevention**: Added a right padding constraint (`paddingRight: '240px'`) on outline line items to reserve space for absolute-positioned floating editing toolbars, preventing text coverage.
+- **Natural Card Expansion**: Replaced viewport constraint `min-h-full` with dynamic `min-h-[85vh] h-fit mb-8` in fullscreen card wrappers to enable the editor canvas to expand scrollable depth following long outlines. Resolved a browser flexbox height calculation bug by removing flex column classes from the outer scrolling wrapper and using standard block `mx-auto` alignment on the sheet card itself to guarantee correct expansion.
+- **Sticky Editor Footer**: Formulated the sheet details and shortcut instructions bar as a sticky panel anchored flush at the bottom boundary of the card (`sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm z-10`). Utilized negative margin alignments (`-mx-8 sm:-mx-12 -mb-8 sm:-mb-12`) and padding restoration to cover bottom padding gaps, preventing scrolled lines from showing underneath/below it, and matching bottom rounded corners (`rounded-b-2xl`).
+- **Sticky Analysis Sidebar**: Converted the desktop layout's right-side warning board into a floating column (`sticky top-8 h-fit`) that slides in sync alongside the scrollable editor sheet.
+
+
+### 10. Toolbar Floating Overlay, Fullscreen Header Stats & Softer Dark Borders (June 3, 2026)
+- **Active-Only Floating Toolbar**: Updated the line item editing toolbar to render *only* when the line has focus/is active (`isActive` is true), removing the hover trigger. Positioned the toolbar to float completely above the row text (`absolute bottom-full right-6 mb-1 z-20`) so it never obscures the outline text input. Removed the right-padding constraint from line item text containers to allow full-width line-editing.
+- **Fullscreen Header Dashboard**: Relocated "Total Outline Elements" statistics and keyboard shortcuts from the bottom footer to the top title block in fullscreen mode.
+- **Sticky Footer Fullscreen Cleanup**: Configured the sticky details bar footer to hide completely in fullscreen mode, eliminating bottom-screen clutter.
+- **Premium Softer Page Borders**: Softened the card sheets and popup outlines in dark mode using translucent border colors (`border-slate-200/80 dark:border-slate-800/60`), enhancing dark theme visual balance without conflicting with light theme aesthetics.
+
+### 11. Editor Display Spacing, Highlight Exclusions, Click-to-Deselect & Full Text Visibility (June 3, 2026)
+- **Editor Display Spacing Settings**: Added a new "Editor Display Spacing" configuration card in the Metadata page with global line height (1.0x–3.0x) and indent width (8–64px) sliders, plus collapsible per-level overrides. Values are persisted in `ProjectMetadata` (`editorLineSpacing`, `editorIndentSpacing`, `editorLevelLineSpacing`, `editorLevelIndentSpacing`) and propagated through `OutlineEditor` to each `OutlineLineItem` as dynamic `lineHeight` and `paddingLeft` styles.
+- **Level 0/1 Highlight Exclusion**: Modified `getKeywordColors()` to skip Section (depth 0) and Topic (depth 1) nodes from keyword frequency counting, and `checkKeywordChaining()` to skip chaining validation for nodes at depth ≤ 1. Updated `OutlineLineItem` to only render color-tagged highlight overlays for depth ≥ 2 nodes, keeping structural headers visually clean.
+- **Click-to-Deselect Active Line**: Added `onMouseDown` deselect handlers on the editor container (both normal and fullscreen modes) that call `setFocusedIndex(null)`, with `e.stopPropagation()` on line items to prevent deselection when clicking on a line. Also added `Escape` key support to deselect and blur the active textarea.
+- **Full Active Line Text Visibility**: Replaced the single-line `<input type="text">` with an auto-resizing `<textarea>` for the active line, and used a wrapping `<div>` for unfocused non-highlighted lines. The textarea auto-grows via `onInput` height adjustment, ensuring all text is visible without horizontal scrolling. Unfocused lines also use `whitespace-pre-wrap break-words` to wrap long text naturally.
+ 
+- **Editor & Export Spacing and Line Height Controls**: Separated line-spacing (space/gap between outline rows) and line-height (text line height within rows) across the editor and export. Added `editorLineHeight`, `editorLevelLineHeight`, `lineHeight`, and `levelLineHeight` properties to `ProjectMetadata` schema. Labeled them clearly in the UI, adjusted dynamic padding styling in the editor, and mapped spacing to `margin-bottom` in the export PDF print and mockup stylesheets.
+- **Export Highlighting Exclusions**: Enforced exclusion of Level 0 (Section) and Level 1 (Topic) nodes from keyword color highlighting in both `ExportView` mockup previews and `pdfPrinter` printed PDF outputs. Removed highlight configuration toggles for Level 0/1 from the per-level settings in ExportView to keep controls clean.
+
+### 12. Subtree-End Insertion & Chaining Adjustments (June 4, 2026)
+- **Subtree End Insertion**: Refactored `handleAddSiblingNode` in `OutlineEditor.tsx` to search forward and insert new child or sibling nodes at the end of the active node's entire subtree (past all descendants with `depth > activeNode.depth`). This guarantees that clicking "Append Question" on a Level 1 (Topic) inserts the new question at the end of the topic's children list instead of pushing it immediately below the topic line itself, maintaining outline structure.
+- **Topic Parent Chaining Exclusion**: Updated `checkKeywordChaining` in `analyzer.ts` to skip keyword chaining checks if the node's parent is a Section (depth 0) or Topic (depth 1) node. This ensures Question nodes (depth 2) are not flagged for keyword chaining violations with their parent Topic.
+
+
+
+
