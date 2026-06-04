@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OutlineNode } from '../../db/indexedDB';
-import { ChevronRight, ChevronLeft, Trash2, PlusCircle, HelpCircle, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronRight, ChevronLeft, ChevronDown, Trash2, PlusCircle, HelpCircle, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface OutlineLineItemProps {
   node: OutlineNode;
@@ -24,6 +24,10 @@ interface OutlineLineItemProps {
   editorLineSpacing?: number;
   editorLineHeight?: number;
   editorIndentSpacing?: number;
+  showStructureLine?: boolean;
+  isCollapsible?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: (id: string) => void;
 }
 
 export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
@@ -48,6 +52,10 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
   editorLineSpacing = 1.0,
   editorLineHeight = 1.4,
   editorIndentSpacing,
+  showStructureLine,
+  isCollapsible,
+  isCollapsed,
+  onToggleCollapse,
 }) => {
 
   // Whether this node should show color highlights (exclude section/topic)
@@ -77,7 +85,7 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
           <span
             key={idx}
             style={{ backgroundColor: bg, color: fg }}
-            className="inline px-1 py-0.5 rounded-sm font-semibold transition-all mx-px"
+            className="inline px-0.5 py-0 rounded-sm font-semibold transition-all mx-px"
           >
             {token}
           </span>
@@ -139,10 +147,44 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
         lineHeight: `${editorLineHeight}` 
       }}
     >
+      {/* Visual Nesting Guide Lines */}
+      {showStructureLine &&
+        Array.from({ length: node.depth }).map((_, i) => {
+          const spacing = editorIndentSpacing !== undefined ? editorIndentSpacing : 24;
+          const leftOffset = 12 + i * spacing + spacing / 2;
+          return (
+            <div
+              key={i}
+              className="absolute top-0 bottom-0 border-l border-slate-200/60 dark:border-slate-800/50 pointer-events-none transition-colors"
+              style={{ left: `${leftOffset}px` }}
+            />
+          );
+        })}
+
       {/* Node Type Indicator */}
-      <div className="flex items-center gap-2 flex-grow min-w-0">
+      <div className="flex items-center gap-1.5 flex-grow min-w-0">
+        {isCollapsible ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCollapse?.(node.id);
+            }}
+            className="flex-shrink-0 p-0.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors cursor-pointer mr-0.5"
+            title={isCollapsed ? "Expand" : "Collapse"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
+        ) : (
+          <div className="w-4.5 h-3.5 flex-shrink-0 mr-0.5" />
+        )}
+
         <span
-          className={`flex-shrink-0 select-none text-xs uppercase tracking-wider font-bold w-12 text-slate-400 dark:text-slate-550`}
+          className={`flex-shrink-0 select-none text-[11px] uppercase tracking-wider font-bold min-w-12 w-auto pr-2 text-slate-400 dark:text-slate-555`}
         >
           {getPrefixLabel()}
         </span>

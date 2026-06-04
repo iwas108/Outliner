@@ -14,7 +14,7 @@ The app follows **Clean Code Architecture** principles separated into layers:
 ### FAIR Principles Alignment
 - **Findable**: Local database models use globally unique, descriptive IDs for all items (projects, revisions, comments).
 - **Accessible**: Works offline completely using IndexedDB; served staticly on GitHub pages via standard, responsive web technologies.
-- **Interoperable**: The export files use clear JSON formats (`.otln` for outlines and `.otln-project` for entire backups).
+- **Interoperable**: The export files use clear JSON formats (`.json` for outlines and `.otln-project` for entire backups).
 - **Reusable**: Outlines and review schemas can be imported/exported repeatedly without platform lock-in.
 
 ---
@@ -24,7 +24,7 @@ The app follows **Clean Code Architecture** principles separated into layers:
 - **Styling**: Tailwind CSS v4 (compiled via @tailwindcss/postcss and autoprefixer)
 - **Database**: IndexedDB (custom Promise-based async wrapper in `src/db/indexedDB.ts`)
 - **Icons**: `lucide-react`
-- **Deployment**: Static build committed to Git and hosted on `iwas108.github.io/Outliner`
+- **Deployment**: Marketing landing page hosted at the project root `iwas108.github.io/Outliner/`, and the compiled interactive React application bundle is served from `iwas108.github.io/Outliner/dist/` (configured with `base: '/Outliner/dist/'` in Vite).
 
 ---
 
@@ -174,6 +174,12 @@ src/
 3. **Auto Keyword Highlighting**: Assigns consistent HSL colors to repeated keywords, highlighting them when nodes are unfocused. **Only nodes at depth ≥ 2 (Question/Answer levels) participate** in keyword frequency counting and highlight rendering.
 4. **Click-to-Deselect**: Clicking anywhere outside a line item deselects the active line and hides the floating toolbar. Pressing `Escape` also deselects.
 5. **Full Text Visibility**: Active lines use an auto-resizing `<textarea>` to wrap and display all text without clipping. Unfocused lines render as block `<div>` elements with `whitespace-pre-wrap break-words`.
+6. **Nesting Structure Guide Lines**: Draws thin, theme-sensitive vertical borders (`border-l border-slate-200/60 dark:border-slate-800/50`) absolutely positioned at the midpoint of each indentation level gap (`12 + i * spacing + spacing / 2`). This visually maps nested tree paths. Toggled via the "Show Structure Line" option in the right-side Editor Options panel and the structure line toggle button inside the fullscreen view's floating controls dock.
+7. **Collapsible Section and Topic Levels**: Render Chevron toggles next to Section and Topic node headers. Tapping these collapses or expands all nested descendant elements, facilitating clean outline viewing.
+8. **Collapsed Warnings by Default**: The fullscreen diagnostics warnings panel starts collapsed by default, requiring a manual click to view to prevent distracting layout shifts.
+
+
+
 
 ---
 
@@ -182,12 +188,13 @@ src/
 ### PDF Layout & Vector Printing Configuration
 - **Symmetric Margins**: Allows users to specify page margins in millimeters (0-100mm) saved directly to project metadata.
 - **Line Spacing & Line Height Layouts**: Supports separate, per-level formatting controls for Line Spacing (controlling vertical space/margin *between* outline items) and Line Height (controlling CSS `line-height` *within* wrapped text lines).
-- **IFrame Print Hijacking**: Spawns a temporary hidden `<iframe>` element, writes a standard page configuration using CSS `@page` parameters (setting size, margins, and orientation dynamically), and calls native `window.print()` inside it. This forces the browser to open a print dialog that compiles vector text PDFs, applying all margins, line spacings, and line heights.
+- **IFrame Print Hijacking**: Spawns a temporary hidden `<iframe>` element, writes a standard page configuration using CSS `@page` parameters (setting size, margins, and orientation dynamically), and calls native `window.print()` inside it. This forces the browser to open a print dialog that compiles vector text PDFs, applying all margins, line spacings, and line heights. Sets the printable document title and temporarily overrides the host page title to enforce custom file names in the print-to-PDF save dialog.
 - **Visual Page Mockups**: A CSS page simulator rendering layout sizes (A4, Letter, A5, Legal) with landscape/portrait orientation flips, displaying the margins in real-time as scaled padding, and formatting layout spacing proportionally via custom css styles.
+- **Formatted Metadata & Custom Footers**: Styles metadata display items as cards with indigo left-accent borders (`border-left: 3px solid #6366f1`) and light backgrounds. Injects a custom footer at the bottom of printed pages utilizing native CSS `@page` margin boxes (`@bottom-left` for branding, `@bottom-center` for revision/commit information, and `@bottom-right` for native page counts `Page X / Y`) styled with divider borders.
 
 ### File Export Formats
-- **`.otln` (JSON Outline File)**: Standard lightweight exchange format containing ONLY outline metadata (goal, MRQ, SRQs) and nodes array (mapped by ID, type, text, depth). Made for exporting outlines to external LLMs.
-- **`.otln-project` (Full Project Backup)**: Serializes the entire IndexedDB database record (including revision commits and review comments) for full workspace restoration.
+- **`.json` (JSON Outline File)**: Standard lightweight exchange format containing ONLY outline metadata (goal, MRQ, SRQs) and nodes array (mapped by ID, type, text, depth). Exported with shortened safe titles followed by `_rev-X` or `_original`.
+- **`.otln-project` (Full Project Backup)**: Serializes the entire IndexedDB database record (including revision commits and review comments) for full workspace restoration. Exported with safe, version-appended filenames.
 - **LLM Review Prompt Generator**: Injects the active outline content and research parameters into an instruction prompt asking the LLM to return feedback in a strict JSON comment schema matching line UUIDs.
 
 ---

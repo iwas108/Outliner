@@ -1,13 +1,468 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outliner - Structured Writing IDE</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Outliner - Privacy-First Academic & Research Outline IDE</title>
+    <meta name="title" content="Outliner - Privacy-First Academic & Research Outline IDE" />
+    <meta name="description" content="Outliner is a modern, privacy-first, offline-ready academic writing IDE. Enforce logical flow, keyword chaining, and structured hierarchy without server leaks." />
+    <meta name="keywords" content="outliner, research outline, writing ide, academic writing, privacy-first, indexeddb, fair data, open source, pdf export, ai review" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://iwas108.github.io/Outliner/" />
+    <meta property="og:title" content="Outliner - Privacy-First Academic & Research Outline IDE" />
+    <meta property="og:description" content="Outliner is a modern, privacy-first, offline-ready academic writing IDE. Enforce logical flow, keyword chaining, and structured hierarchy without server leaks." />
+    <meta property="og:image" content="https://iwas108.github.io/Outliner/docs/images/Outliner_editing_page.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://iwas108.github.io/Outliner/" />
+    <meta property="twitter:title" content="Outliner - Privacy-First Academic & Research Outline IDE" />
+    <meta property="twitter:description" content="Outliner is a modern, privacy-first, offline-ready academic writing IDE. Enforce logical flow, keyword chaining, and structured hierarchy without server leaks." />
+    <meta property="twitter:image" content="https://iwas108.github.io/Outliner/docs/images/Outliner_editing_page.jpg" />
+
+    <!-- Google Fonts Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- CDN Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#172033',
+                950: '#0b0f19',
+              }
+            },
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .glass {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .glass-light {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      .text-glow {
+        text-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body class="bg-slate-950 text-slate-100 selection:bg-purple-500 selection:text-white antialiased overflow-x-hidden">
+
+    <!-- Radial Background Gradients -->
+    <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-650/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+    <div class="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-indigo-650/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-[500px] h-[500px] bg-fuchsia-650/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass border-b border-slate-800/60 transition-all">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+        <a href="#" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-650 flex items-center justify-center shadow-lg shadow-purple-900/30 group-hover:scale-105 transition-all">
+            <!-- Outliner Logo Icon -->
+            <svg class="w-5.5 h-5.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </div>
+          <div>
+            <span class="text-xl font-black bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent tracking-tight">Outliner</span>
+            <span class="block text-[9px] text-slate-400 font-mono tracking-widest uppercase -mt-0.5">IDE Editor</span>
+          </div>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-350">
+          <a href="#features" class="hover:text-purple-400 transition-colors">Features</a>
+          <a href="#screens" class="hover:text-purple-400 transition-colors">Workspace</a>
+          <a href="#fair" class="hover:text-purple-400 transition-colors">FAIR & Privacy</a>
+          <a href="https://github.com/iwas108/Outliner" target="_blank" class="hover:text-purple-400 transition-colors flex items-center gap-1.5">
+            GitHub
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+          <a
+            href="./dist/"
+            class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-550 hover:to-indigo-550 text-white rounded-xl text-sm font-bold shadow-md shadow-purple-900/20 hover:shadow-purple-900/40 hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            Launch Outliner
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-6 pt-16 md:pt-28 pb-16 text-center flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-400 text-xs font-bold uppercase tracking-wider mb-8 animate-pulse">
+        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+        Privacy-First Academic Tooling
+      </div>
+      
+      <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] text-glow">
+        The Structured Way to Outline <br/>
+        <span class="bg-gradient-to-r from-purple-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">Academic & Research Papers</span>
+      </h1>
+      
+      <p class="text-slate-400 text-lg md:text-xl max-w-3xl mt-6 leading-relaxed">
+        Stop fighting document layout formatting. Enforce strict hierarchy, trace logical keyword chaining, paste AI critiques side-by-side, and print beautiful vector PDFs. All 100% offline in your browser.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 mt-10">
+        <a
+          href="./dist/"
+          class="px-8 py-4 bg-purple-600 hover:bg-purple-550 text-white rounded-2xl font-bold shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
+        >
+          Start Writing Online (Free)
+        </a>
+        <a
+          href="https://github.com/iwas108/Outliner"
+          target="_blank"
+          class="px-8 py-4 border border-slate-750 bg-slate-900/50 hover:bg-slate-900 text-slate-300 hover:text-white rounded-2xl font-bold transition-all text-base flex items-center justify-center gap-2 cursor-pointer"
+        >
+          View on GitHub
+        </a>
+      </div>
+
+      <!-- Main App Mockup Screen -->
+      <div class="mt-16 md:mt-24 w-full max-w-5xl rounded-2xl border border-slate-800/80 bg-slate-900/40 p-3 shadow-2xl relative">
+        <div class="flex items-center gap-1.5 border-b border-slate-800/60 pb-3 px-2 mb-3">
+          <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+          <span class="text-[10px] text-slate-500 font-mono ml-4">https://iwas108.github.io/Outliner/dist/</span>
+        </div>
+        <img
+          src="docs/images/Outliner_editing_page.jpg"
+          alt="Outliner Workspace Preview"
+          class="w-full h-auto rounded-xl object-cover shadow-inner"
+        />
+        <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none rounded-b-2xl"></div>
+      </div>
+    </section>
+
+    <!-- Core Features Summary Grid -->
+    <section id="features" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-900">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">
+          Designed for Rigid Logical Continuity
+        </h2>
+        <p class="text-slate-400 mt-4 leading-relaxed">
+          Outliner goes beyond general text editors. It translates research outlines into strict logical blocks and validates them in real-time.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="p-8 rounded-2xl border border-slate-850 bg-slate-900/20 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-xl bg-purple-550/10 text-purple-400 flex items-center justify-center">
+            <!-- Hierarchy Check svg -->
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold">Structural Constraints</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Strict tree validation rules mapping nodes to Section, Topic, Question, and Answer. Ensures every Question is paired with corresponding Answers, keeping your narrative complete.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-8 rounded-2xl border border-slate-850 bg-slate-900/20 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-xl bg-pink-550/10 text-pink-400 flex items-center justify-center">
+            <!-- Keyword Link svg -->
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold">Keyword Chaining Engine</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Checks semantic flow between consecutive outline nodes by tracing shared keywords. Instantly flags gaps or conceptual drift, visually mapping repetitive phrases using color badges.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-8 rounded-2xl border border-slate-850 bg-slate-900/20 flex flex-col gap-4">
+          <div class="w-12 h-12 rounded-xl bg-indigo-550/10 text-indigo-400 flex items-center justify-center">
+            <!-- PDF Printer svg -->
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold">Human-Directed Layouts</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Customize document templates down to the details. Control global and level-specific margins, indentations, line spacings, and heights, outputting clean, native vector PDFs.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workspace Gallery Showcase -->
+    <section id="screens" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-900 bg-slate-900/5">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold text-purple-400 uppercase tracking-widest font-mono">Walkthrough</span>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mt-2">
+          Tour the Outliner IDE Workspace
+        </h2>
+        <p class="text-slate-400 mt-4">
+          Explore the workspace interfaces designed to steer research outline formulation from initialization to validation.
+        </p>
+      </div>
+
+      <!-- Grid of Screens -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Screen 1: Dashboard -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_dashboard_page.jpg"
+              alt="Outliner Project Dashboard"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 1</span>
+              Local Project Dashboard
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Create new outline documents, review details, and delete drafts. Back up entire projects to standard JSON formats (`.otln-project`) or restore snapshots securely with zero server tracking.
+            </p>
+          </div>
+        </div>
+
+        <!-- Screen 2: Metadata -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_metadata_page.jpg"
+              alt="Outliner Research Metadata Setup"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 2</span>
+              Research Core Formulations
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Configure parameters before outlining. Set writing targets, audience profiles, research objectives, main research questions (MRQs), and a list of sub research questions (SRQs) to anchors focus.
+            </p>
+          </div>
+        </div>
+
+        <!-- Screen 3: Nested Editor -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_editing_page.jpg"
+              alt="Outliner Nested Text Processor"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 3</span>
+              Structured Outline Text-Processor
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Write outlines using a borderless nested canvas. Use `Tab`/`Shift+Tab` to indent/outdent rows, immediately translating them between Section, Topic, Question, and Answer. Focus elements to overlay active action items.
+            </p>
+          </div>
+        </div>
+
+        <!-- Screen 4: Fullscreen Mode -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_editing_fullscreen.jpg"
+              alt="Outliner Fullscreen Maximize View"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 4</span>
+              Fullscreen Focus Mode & Warnings Dock
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Maximize your outline canvas. Features a bottom control dock to toggle structure guide lines, and a collapsible real-time diagnostics card stream listing structure checks and phrasing issues.
+            </p>
+          </div>
+        </div>
+
+        <!-- Screen 5: AI Reviews -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-850 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_review_page.jpg"
+              alt="Outliner AI Review Gutter"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 5</span>
+              AI Peer Reviews Gutter Board
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Export comprehensive prompts, fetch critique from an LLM, and paste feedback directly. Reviews parse into gutter badges alongside nodes, showing active comment cards that can be resolved one-by-one.
+            </p>
+          </div>
+        </div>
+
+        <!-- Screen 6: Export Templates -->
+        <div class="flex flex-col gap-4 group">
+          <div class="overflow-hidden rounded-2xl border border-slate-850 bg-slate-900/40 p-2 group-hover:border-purple-500/45 transition-all duration-300">
+            <img
+              src="docs/images/Outliner_export_page.jpg"
+              alt="Outliner PDF Customizer Previews"
+              class="w-full h-auto rounded-xl object-cover hover:scale-[1.02] transition-all duration-300"
+            />
+          </div>
+          <div>
+            <h3 class="text-lg font-bold flex items-center gap-2 text-slate-100">
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400">Step 6</span>
+              PDF Print Configuration Mockups
+            </h3>
+            <p class="text-slate-400 text-sm mt-1.5 leading-relaxed">
+              Symmetrically adjust physical sheet margins, orientations, and dimensions. Override specific levels to toggle colored keyword markers or custom line heights, printing vector PDFs on a live mockup canvas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAIR Principles & Privacy Focus -->
+    <section id="fair" class="max-w-7xl mx-auto px-6 py-20 border-t border-slate-900 bg-slate-900/10">
+      <div class="flex flex-col lg:flex-row gap-16 items-center">
+        <div class="w-full lg:w-1/2 flex flex-col gap-6">
+          <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest font-mono">Offline-First & FAIR</span>
+          <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight">
+            100% Privacy by Design <br/>
+            Aligned with FAIR Standards
+          </h2>
+          <p class="text-slate-400 leading-relaxed">
+            Your ideas belong to you. Outliner implements strict offline-first database mechanics to ensure zero server leakages or cloud tracking, while conforming to the four pillars of open research data.
+          </p>
+
+          <div class="flex flex-col gap-4 mt-4 text-sm">
+            <div class="flex gap-4">
+              <div class="text-indigo-400 font-black shrink-0">01. PRIVACY</div>
+              <div class="text-slate-350">
+                <strong>Zero Cloud Storage:</strong> All drafts, commits, config toggles, and critique feeds save directly in your client browser's IndexedDB. No remote tracking, no server logins, and no hidden APIs.
+              </div>
+            </div>
+            <div class="flex gap-4 border-t border-slate-900 pt-4">
+              <div class="text-indigo-400 font-black shrink-0">02. OPEN SOURCE</div>
+              <div class="text-slate-350">
+                <strong>Inspectable MIT Codebase:</strong> Auditable under open source licensing. Run it locally, build it offline, copy files, or deploy it on static hosts without vendor locks or subscriptions.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAIR Cards -->
+        <div class="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Findable -->
+          <div class="p-6 rounded-2xl border border-slate-850 bg-slate-900/30">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Findable
+            </h3>
+            <p class="text-slate-405 text-xs mt-2 leading-relaxed">
+              Every outline, revision checkpoint, and comment cards map unique UUID coordinates in IndexedDB, facilitating exact indexing.
+            </p>
+          </div>
+          <!-- Accessible -->
+          <div class="p-6 rounded-2xl border border-slate-850 bg-slate-900/30">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Accessible
+            </h3>
+            <p class="text-slate-405 text-xs mt-2 leading-relaxed">
+              Works completely offline. Served as standard responsive static files, guaranteeing immediate availability without internet connections.
+            </p>
+          </div>
+          <!-- Interoperable -->
+          <div class="p-6 rounded-2xl border border-slate-850 bg-slate-900/30">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Interoperable
+            </h3>
+            <p class="text-slate-405 text-xs mt-2 leading-relaxed">
+              Outline models export to standard, beautifully indented `.json` schemas. Project backups save in portable database structures.
+            </p>
+          </div>
+          <!-- Reusable -->
+          <div class="p-6 rounded-2xl border border-slate-850 bg-slate-900/30">
+            <h3 class="font-bold text-slate-100 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              Reusable
+            </h3>
+            <p class="text-slate-405 text-xs mt-2 leading-relaxed">
+              Easily migrate data. Import and export outlines repeatedly across systems. Re-examine history pipelines without platform locks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="max-w-5xl mx-auto px-6 py-20 text-center flex flex-col items-center">
+      <h2 class="text-3xl md:text-5xl font-black tracking-tight leading-[1.1]">
+        Ready to Structurize Your Outline?
+      </h2>
+      <p class="text-slate-400 text-sm md:text-base mt-4 max-w-xl">
+        Experience a better way to plan academic research papers. Define objective questions, track keyword chaining, copy LLM reviews, and print clean layouts.
+      </p>
+      
+      <a
+        href="./dist/"
+        class="mt-8 px-10 py-4 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-550 hover:to-indigo-550 text-white rounded-2xl font-bold shadow-xl shadow-purple-900/30 hover:shadow-purple-900/50 hover:-translate-y-0.5 transition-all text-base cursor-pointer"
+      >
+        Launch the Outliner Editor
+      </a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-12">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6 text-xs text-slate-500">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 rounded bg-gradient-to-tr from-purple-600 to-indigo-650 flex items-center justify-center text-[10px] text-white font-black">O</div>
+          <span>&copy; 2026 Outliner. Under the MIT License.</span>
+        </div>
+        <div class="flex items-center gap-8">
+          <a href="https://iwas108.github.io/Outliner/" class="hover:text-slate-350">Outliner Home</a>
+          <a href="./dist/" class="hover:text-slate-350">Outliner App</a>
+          <a href="https://github.com/iwas108/Outliner" target="_blank" class="hover:text-slate-350 flex items-center gap-1">
+            GitHub
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+
   </body>
 </html>

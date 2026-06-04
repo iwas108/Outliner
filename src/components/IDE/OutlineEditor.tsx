@@ -3,12 +3,14 @@ import type { OutlineNode } from '../../db/indexedDB';
 import { OutlineLineItem } from './OutlineLineItem';
 import { canIndent, canOutdent, getNodeTypeForDepth, validateOutlineTree } from '../../utils/outlineRules';
 import { check5W1H, checkKeywordChaining } from '../../utils/analyzer';
-import { Plus, ListTodo, Maximize2, Minimize2, ShieldCheck, AlertCircle, Eye, EyeOff, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, ListTodo, Maximize2, Minimize2, ShieldCheck, AlertCircle, Eye, EyeOff, ChevronUp, ChevronDown, ListTree } from 'lucide-react';
 
 interface OutlineEditorProps {
   nodes: OutlineNode[];
   colorTaggingEnabled: boolean;
   onColorTaggingToggle?: (enabled: boolean) => void;
+  showStructureLine?: boolean;
+  onShowStructureLineToggle?: (enabled: boolean) => void;
   keywordColors: { [word: string]: string };
   focusedIndex: number | null;
   setFocusedIndex: (index: number | null) => void;
@@ -26,6 +28,8 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   nodes,
   colorTaggingEnabled,
   onColorTaggingToggle,
+  showStructureLine = false,
+  onShowStructureLineToggle,
   keywordColors,
   focusedIndex,
   setFocusedIndex,
@@ -42,7 +46,43 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [diagnosticsCollapsed, setDiagnosticsCollapsed] = useState<boolean | null>(null);
+  const [diagnosticsCollapsed, setDiagnosticsCollapsed] = useState<boolean>(true);
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
+
+  const handleToggleCollapse = (nodeId: string) => {
+    setCollapsedNodeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return next;
+    });
+  };
+
+  // Compute visibility mapping
+  let currentSectionCollapsed = false;
+  let currentTopicCollapsed = false;
+  const visibleNodeIds = new Set<string>();
+
+  nodes.forEach((node) => {
+    if (node.type === 'section') {
+      currentSectionCollapsed = collapsedNodeIds.has(node.id);
+      currentTopicCollapsed = false;
+      visibleNodeIds.add(node.id);
+    } else if (currentSectionCollapsed) {
+      // Hidden because Section is collapsed
+    } else if (node.type === 'topic') {
+      currentTopicCollapsed = collapsedNodeIds.has(node.id);
+      visibleNodeIds.add(node.id);
+    } else if (currentTopicCollapsed) {
+      // Hidden because Topic is collapsed
+    } else {
+      visibleNodeIds.add(node.id);
+    }
+  });
+
 
   // Diagnostics calculations
   const structureErrors = validateOutlineTree(nodes, maxDepth);
@@ -60,25 +100,56 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   });
 
   const totalWarnings = structureErrors.length + syntaxErrors.length + Object.keys(chainingViolations).length;
-  const isCollapsed = diagnosticsCollapsed !== null ? diagnosticsCollapsed : (totalWarnings === 0);
+  const isCollapsed = diagnosticsCollapsed;
 
-  const prevWarningsCountRef = useRef(0);
-  useEffect(() => {
-    if (totalWarnings > prevWarningsCountRef.current && totalWarnings > 0) {
-      setDiagnosticsCollapsed(false);
-    }
-    prevWarningsCountRef.current = totalWarnings;
-  }, [totalWarnings]);
-
-  // Focus utility to programmatically focus the active input element
+  // Focus and visibility utility to programmatically expand parents and focus/scroll the active input element
   useEffect(() => {
     if (focusedIndex !== null && nodes[focusedIndex]) {
-      const activeEl = document.getElementById(`line-${nodes[focusedIndex].id}`);
-      if (activeEl) {
-        (activeEl as HTMLInputElement).focus();
+      const targetNode = nodes[focusedIndex];
+      
+      // 1. Check if any parent needs to be expanded
+      let parentTopicId: string | null = null;
+      let parentSectionId: string | null = null;
+      
+      for (let i = focusedIndex - 1; i >= 0; i--) {
+        const node = nodes[i];
+        if (node.type === 'section' && !parentSectionId) {
+          parentSectionId = node.id;
+        }
+        if (node.type === 'topic' && !parentTopicId && !parentSectionId) {
+          parentTopicId = node.id;
+        }
       }
+
+      const needsExpandTopic = parentTopicId && collapsedNodeIds.has(parentTopicId);
+      const needsExpandSection = parentSectionId && collapsedNodeIds.has(parentSectionId);
+
+      if (needsExpandTopic || needsExpandSection) {
+        setCollapsedNodeIds((prev) => {
+          const next = new Set(prev);
+          if (needsExpandTopic && parentTopicId) {
+            next.delete(parentTopicId);
+          }
+          if (needsExpandSection && parentSectionId) {
+            next.delete(parentSectionId);
+          }
+          return next;
+        });
+        return;
+      }
+
+      // 2. Focus and Scroll into view
+      const timer = setTimeout(() => {
+        const activeEl = document.getElementById(`line-${targetNode.id}`);
+        if (activeEl) {
+          (activeEl as HTMLTextAreaElement | HTMLInputElement).focus();
+          activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+
+      return () => clearTimeout(timer);
     }
-  }, [focusedIndex, nodes]);
+  }, [focusedIndex, nodes, collapsedNodeIds]);
 
   const handleTextChange = (id: string, text: string) => {
     const updated = nodes.map((node) => {
@@ -245,7 +316,10 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
 
   const renderFloatingDock = () => {
     return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 select-none">
+      <div 
+        onMouseDown={(e) => e.stopPropagation()}
+        className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 select-none"
+      >
         {/* Expanded Warning Popup */}
         {!isCollapsed && totalWarnings > 0 && (
           <div
@@ -271,11 +345,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                 <button
                   key={`struct-fs-${idx}`}
                   onClick={() => {
-                    const el = document.getElementById(`line-${err.nodeId}`);
-                    if (el) {
-                      el.focus();
-                      setFocusedIndex(err.index);
-                    }
+                    setFocusedIndex(err.index);
                   }}
                   className="w-full text-left p-2.5 rounded-lg bg-rose-50/25 dark:bg-rose-950/10 border border-rose-100/50 dark:border-rose-900/25 hover:border-rose-350 dark:hover:border-rose-800/60 shadow-sm flex flex-col gap-0.5 transition-all text-xs cursor-pointer"
                 >
@@ -294,11 +364,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                 <button
                   key={`syntax-fs-${idx}`}
                   onClick={() => {
-                    const el = document.getElementById(`line-${err.nodeId}`);
-                    if (el) {
-                      el.focus();
-                      setFocusedIndex(err.index);
-                    }
+                    setFocusedIndex(err.index);
                   }}
                   className="w-full text-left p-2.5 rounded-lg bg-amber-50/25 dark:bg-amber-950/10 border border-amber-100/50 dark:border-amber-900/25 hover:border-amber-350 dark:hover:border-amber-800/60 shadow-sm flex flex-col gap-0.5 transition-all text-xs cursor-pointer"
                 >
@@ -319,9 +385,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                   <button
                     key={`chain-fs-${idx}`}
                     onClick={() => {
-                      const el = document.getElementById(`line-${id}`);
-                      if (el) {
-                        el.focus();
+                      if (nodeIdx !== -1) {
                         setFocusedIndex(nodeIdx);
                       }
                     }}
@@ -350,11 +414,25 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
             className={`p-2 rounded-xl border transition-all cursor-pointer ${
               colorTaggingEnabled
                 ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/40 text-purple-600 dark:text-purple-400'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-650'
             }`}
             title={colorTaggingEnabled ? 'Disable Color Highlights' : 'Enable Color Highlights'}
           >
             {colorTaggingEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </button>
+
+          {/* Structure Line toggle */}
+          <button
+            type="button"
+            onClick={() => onShowStructureLineToggle?.(!showStructureLine)}
+            className={`p-2 rounded-xl border transition-all cursor-pointer ${
+              showStructureLine
+                ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/40 text-purple-600 dark:text-purple-400'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-650'
+            }`}
+            title={showStructureLine ? 'Hide Structure Lines' : 'Show Structure Lines'}
+          >
+            <ListTree className="w-4 h-4" />
           </button>
 
           {/* Diagnostics toggle pill */}
@@ -450,32 +528,41 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
         </div>
       ) : (
         <div className="flex flex-col gap-2 flex-grow" onMouseDown={() => setFocusedIndex(null)}>
-          {nodes.map((node, index) => (
-            <OutlineLineItem
-              key={node.id}
-              node={node}
-              index={index}
-              isActive={focusedIndex === index}
-              canIndent={canIndent(nodes, index, maxDepth)}
-              canOutdent={canOutdent(nodes, index)}
-              colorTaggingEnabled={colorTaggingEnabled}
-              keywordColors={keywordColors}
-              onTextChange={handleTextChange}
-              onIndent={handleIndent}
-              onOutdent={handleOutdent}
-              onDelete={handleDelete}
-              onAddSiblingNode={handleAddSiblingNode}
-              onMoveUp={handleMoveUp}
-              onMoveDown={handleMoveDown}
-              isFirstLine={index === 0}
-              isLastLine={index === nodes.length - 1}
-              onFocus={setFocusedIndex}
-              onKeyDown={handleKeyDown}
-              editorLineSpacing={editorLevelLineSpacing?.[node.depth] ?? editorLineSpacing}
-              editorLineHeight={editorLevelLineHeight?.[node.depth] ?? editorLineHeight}
-              editorIndentSpacing={editorLevelIndentSpacing?.[node.depth] ?? editorIndentSpacing}
-            />
-          ))}
+          {nodes.map((node, index) => {
+            const isVisible = visibleNodeIds.has(node.id);
+            if (!isVisible) return null;
+
+            return (
+              <OutlineLineItem
+                key={node.id}
+                node={node}
+                index={index}
+                isActive={focusedIndex === index}
+                canIndent={canIndent(nodes, index, maxDepth)}
+                canOutdent={canOutdent(nodes, index)}
+                colorTaggingEnabled={colorTaggingEnabled}
+                keywordColors={keywordColors}
+                onTextChange={handleTextChange}
+                onIndent={handleIndent}
+                onOutdent={handleOutdent}
+                onDelete={handleDelete}
+                onAddSiblingNode={handleAddSiblingNode}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                isFirstLine={index === 0}
+                isLastLine={index === nodes.length - 1}
+                onFocus={setFocusedIndex}
+                onKeyDown={handleKeyDown}
+                editorLineSpacing={editorLevelLineSpacing?.[node.depth] ?? editorLineSpacing}
+                editorLineHeight={editorLevelLineHeight?.[node.depth] ?? editorLineHeight}
+                editorIndentSpacing={editorLevelIndentSpacing?.[node.depth] ?? editorIndentSpacing}
+                showStructureLine={showStructureLine}
+                isCollapsible={node.type === 'section' || node.type === 'topic'}
+                isCollapsed={collapsedNodeIds.has(node.id)}
+                onToggleCollapse={handleToggleCollapse}
+              />
+            );
+          })}
           
           <button
             onClick={handleAddSectionAtBottom}

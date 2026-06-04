@@ -36,4 +36,4 @@ Keep these principles in mind when writing code:
 - **Clean Architecture**: Keep UI views separated from business validation logic.
 - **Offline First**: All user data, configurations, and revisions must persist in IndexedDB.
 - **Aesthetic Premium**: Match light/dark/system themes seamlessly using Tailwind CSS. Use modern CSS gradients, glassmorphism, and transitions.
-- **FAIR Data Handling**: Ensure exports (`.otln` and `.otln-project` JSON schemas) are clean, properly indented, and map UUIDs consistently.
+- **FAIR Data Handling**: Ensure exports (`.json` and `.otln-project` JSON schemas) are clean, properly indented, and map UUIDs consistently.

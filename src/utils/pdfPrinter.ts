@@ -1,6 +1,20 @@
 import type { Project } from '../db/indexedDB';
 import { getKeywordColors } from './analyzer';
 
+export function getSafeExportFilename(project: Project): string {
+  const safeTitle = project.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .substring(0, 30);
+
+  const rev = project.commits && project.commits.length > 0
+    ? `rev-${project.commits.length}`
+    : 'original';
+
+  return `${safeTitle || 'outline'}_${rev}`;
+}
+
 export function printOutline(project: Project): void {
   // Create hidden iframe
   const iframe = document.createElement('iframe');
@@ -19,10 +33,10 @@ export function printOutline(project: Project): void {
   }
 
   const { title, metadata, nodes } = project;
-  const { 
-    pageSize = 'A4', 
-    orientation = 'portrait', 
-    margins = { top: 20, bottom: 20, left: 20, right: 20 },
+  const {
+    pageSize = 'A4',
+    orientation = 'portrait',
+    margins = { top: 10, bottom: 20, left: 20, right: 20 },
     maxLevel = 12,
     includeHighlighting = false,
     lineSpacing = 1.5,
@@ -40,7 +54,7 @@ export function printOutline(project: Project): void {
   for (let d = 0; d <= (maxLevel || 20); d++) {
     const customIndent = levelIndentSpacing[d] !== undefined ? levelIndentSpacing[d] : (d * indentSpacing);
     indentStyles += `    .depth-${d} { margin-left: ${customIndent}mm; }\n`;
-    
+
     const customLineSpacing = levelLineSpacing[d] !== undefined ? levelLineSpacing[d] : lineSpacing;
     const customLineHeight = levelLineHeight[d] !== undefined ? levelLineHeight[d] : lineHeight;
     lineSpacingStyles += `    .line-spacing-${d} { margin-bottom: ${customLineSpacing * 2}mm; line-height: ${customLineHeight}; }\n`;
@@ -52,7 +66,7 @@ export function printOutline(project: Project): void {
   const renderHighlightTextHtml = (text: string, depth: number) => {
     if (!text) return '';
     const tokens = text.split(/(\s+|[.,\/#!$%\^&\*;:{}=\-_`~()?])/);
-    
+
     const isHighlightEnabled = depth >= 2 && (levelHighlighting[depth] !== undefined ? levelHighlighting[depth] : includeHighlighting);
     if (!isHighlightEnabled) {
       return escapeHtml(text);
@@ -62,22 +76,59 @@ export function printOutline(project: Project): void {
       const cleanWord = token.toLowerCase();
       if (keywordColors && keywordColors[cleanWord]) {
         const [bg, fg] = keywordColors[cleanWord].split('|');
-        return `<span style="background-color: ${bg}; color: ${fg}; padding: 1px 3px; border-radius: 2px; font-weight: 500; display: inline-block; white-space: pre;">${escapeHtml(token)}</span>`;
+        return `<span style="background-color: ${bg}; color: ${fg}; padding: 0.5px 2px; border-radius: 1px; font-weight: 500; display: inline; white-space: pre; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${escapeHtml(token)}</span>`;
       }
       return escapeHtml(token);
     }).join('');
   };
+
+  const revisionText = project.commits && project.commits.length > 0
+    ? `Revision ${project.commits.length}`
+    : 'Original';
+
+  const safeFilename = getSafeExportFilename(project);
 
   // Build the print styles
   const styles = `
     @page {
       size: ${pageSize} ${orientation};
       margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
+      @bottom-left {
+        content: "Made with Outliner";
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 8px;
+        color: #64748b;
+        font-weight: 550;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 0px;
+      }
+      @bottom-center {
+        content: "${escapeHtml(revisionText)}";
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 8px;
+        color: #64748b;
+        font-weight: 550;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 0px;
+      }
+      @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-size: 8px;
+        color: #64748b;
+        font-weight: 550;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 0px;
+      }
     }
     @media print {
       body {
         background: #fff;
         color: #000;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .outline-node span {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
@@ -88,36 +139,63 @@ export function printOutline(project: Project): void {
       color: #1e293b;
       margin: 0;
       padding: 0;
+      padding-bottom: 15mm;
     }
     .header {
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e2e8f0;
     }
     .title {
-      font-size: 24px;
-      font-weight: 800;
+      font-size: 26px;
+      font-weight: 850;
       color: #0f172a;
-      margin: 0 0 8px 0;
+      letter-spacing: -0.025em;
+      margin: 0 0 16px 0;
+      line-height: 1.15;
     }
     .meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 24px;
       font-size: 11px;
-      color: #475569;
+      color: #334155;
+    }
+    .meta-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
     .meta-item {
-      margin-bottom: 6px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-left: 3px solid #6366f1;
+      border-radius: 6px;
+      padding: 10px 12px;
     }
     .meta-label {
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 9px;
-      color: #64748b;
+      font-size: 8.5px;
+      letter-spacing: 0.05em;
+      color: #4f46e5;
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
     }
+    .meta-value {
+      font-size: 11px;
+      line-height: 1.45;
+      color: #334155;
+    }
+    .meta-value ol {
+      margin: 4px 0 0 0;
+      padding-left: 16px;
+    }
+    .meta-value li {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
     .outline-container {
       display: flex;
       flex-direction: column;
@@ -187,44 +265,46 @@ ${indentStyles}  `;
 
   // Format SRQs if present
   const srqsHtml = metadata.subResearchQuestions && metadata.subResearchQuestions.length > 0
-    ? `<ol style="margin: 0; padding-left: 16px;">
+    ? `<ol>
         ${metadata.subResearchQuestions.map(q => `<li>${escapeHtml(q)}</li>`).join('')}
        </ol>`
     : 'None';
+
+
 
   const htmlContent = `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>${escapeHtml(title)}</title>
+      <title>${escapeHtml(safeFilename)}</title>
       <style>${styles}</style>
     </head>
     <body>
       <div class="header">
         <h1 class="title">${escapeHtml(title)}</h1>
         <div class="meta-grid">
-          <div>
+          <div class="meta-column">
             <div class="meta-item">
               <span class="meta-label">Writing Goal</span>
-              ${escapeHtml(metadata.writingGoal || 'Not specified')}
+              <div class="meta-value">${escapeHtml(metadata.writingGoal || 'Not specified')}</div>
             </div>
             <div class="meta-item">
               <span class="meta-label">Target Audience</span>
-              ${escapeHtml(metadata.targetAudience || 'Not specified')}
+              <div class="meta-value">${escapeHtml(metadata.targetAudience || 'Not specified')}</div>
             </div>
             <div class="meta-item">
               <span class="meta-label">Research Objective</span>
-              ${escapeHtml(metadata.researchObjective || 'Not specified')}
+              <div class="meta-value">${escapeHtml(metadata.researchObjective || 'Not specified')}</div>
             </div>
           </div>
-          <div>
+          <div class="meta-column">
             <div class="meta-item">
               <span class="meta-label">Main Research Question</span>
-              ${escapeHtml(metadata.researchQuestion || 'Not specified')}
+              <div class="meta-value">${escapeHtml(metadata.researchQuestion || 'Not specified')}</div>
             </div>
             <div class="meta-item">
               <span class="meta-label">Sub Research Questions</span>
-              ${srqsHtml}
+              <div class="meta-value">${srqsHtml}</div>
             </div>
           </div>
         </div>
@@ -232,9 +312,14 @@ ${indentStyles}  `;
       <div class="outline-container">
         ${nodesHtml}
       </div>
+
     </body>
     </html>
   `;
+
+  // Temporarily change host title to force safe PDF download filename in browser
+  const originalHostTitle = document.title;
+  document.title = safeFilename;
 
   doc.open();
   doc.write(htmlContent);
@@ -248,7 +333,10 @@ ${indentStyles}  `;
     } catch (err) {
       console.error('Print dialogue error:', err);
     }
-    
+
+    // Restore host title
+    document.title = originalHostTitle;
+
     // Remove element after dialog handles print
     setTimeout(() => {
       if (document.body.contains(iframe)) {

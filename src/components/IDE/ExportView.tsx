@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Project, ProjectMetadata } from '../../db/indexedDB';
-import { printOutline } from '../../utils/pdfPrinter';
+import { printOutline, getSafeExportFilename } from '../../utils/pdfPrinter';
 import { 
   Printer, 
   FileText, 
@@ -66,7 +66,7 @@ export const ExportView: React.FC<ExportViewProps> = ({ project, onSaveProject }
           <span
             key={idx}
             style={{ backgroundColor: bg, color: fg }}
-            className="inline-block px-1 py-0.5 rounded-sm font-semibold text-[8px] mx-px"
+            className="inline-block px-[2px] py-0 rounded-[1px] font-semibold text-[8px] mx-px"
           >
             {token}
           </span>
@@ -131,43 +131,47 @@ export const ExportView: React.FC<ExportViewProps> = ({ project, onSaveProject }
 
   // Compile LLM Review Prompt
   const generatePromptText = () => {
-    const nodesFormatted = project.nodes
-      .map((node) => {
-        const indent = '  '.repeat(node.depth);
-        return `[ID: ${node.id}] [Depth: ${node.depth}] [Type: ${node.type.toUpperCase()}] ${indent}${node.text || '(Empty)'}`;
-      })
-      .join('\n');
-
     return `You are an expert academic writing assistant and outline evaluator.
-Please review the following research outline metadata and hierarchical node structure. Your task is to analyze logical continuity, verify question-answer pairings, identify keyword chaining gaps, and check that questions are properly phrased using 5W1H (Who, What, Where, When, Why, How) with a question mark.
+Please review the research outline metadata below, and the hierarchical node structure provided in the attached \`.json\` file. Your task is to analyze logical continuity, verify question-answer pairings, identify keyword chaining gaps, and check that questions are properly phrased using 5W1H (Who, What, Where, When, Why, How) with a question mark. 
+
+Furthermore, you must evaluate the outline's overarching idea flow, ensuring strict macro and micro cohesion and coherence across all nodes. Assess the research-related substantial flow to verify that the narrative logically progresses from the problem definition through the sequential semantic validation methodology. You must ensure this progression is maintained without introducing conceptual regression, circular reasoning, or disjointed transitions.
 
 ### Project Context
-- **Title**: ${title || 'Untitled Project'}
-- **Goal**: ${metadata.writingGoal || 'Not formulated'}
-- **Target Audience**: ${metadata.targetAudience || 'Not formulated'}
-- **Research Objective**: ${metadata.researchObjective || 'Not formulated'}
-- **Main Research Question (MRQ)**: ${metadata.researchQuestion || 'Not formulated'}
+- **Title**: SLR Magic - Multi Persona SLR Screening Tools
+- **Goal**: To present, architect, and empirically validate an open-source, resource-optimized, multi-persona LLM pipeline architecture (SLR Magic) capable of automating systematic literature reviews while maintaining strict, mathematically verified inter-rater reliability with human experts.
+- **Target Audience**: Software engineers, computer scientists, applied AI researchers, and empirical methodologists seeking to implement or evaluate high-throughput agentic workflows for dense scientific text extraction without compromising on statistical reproducibility or structural schema adherence.
+- **Research Objective**: The central aim of this research is to present, architect, and empirically validate an open-source, resource-optimized, multi-persona Large Language Model (LLM) pipeline architecture—named SLR Magic—to automate and accelerate the systematic literature review screening process. To resolve the systemic crisis of human cognitive fatigue, high error rates, and prolonged publication timelines inherent in traditional manual reviews, this research pursues a dual-pronged objective: Mechanistically: To validate that the distributed, multi-persona AI pipeline can compress the dense scientific text screening timeline from months to days. It aims to achieve architectural efficiency by successfully mitigating context-window limitations and minimizing processing latency without triggering system timeouts. Methodologically: To introduce and implement a dynamic Sequential Quality Control Audit that minimizes human expert intervention to the absolute theoretical minimum required for statistical validation. This process is designed to prevent human resource exhaustion while mathematically maintaining strict, auditable, and defense-ready inter-rater reliability (Precision, Recall, and Kappa scores) comparable to a blinded panel of domain experts.
+- **Main Research Question (MRQ)**: To what extent can a resource-optimized, distributed multi-persona LLM framework achieve architectural efficiency (mitigating processing latency and token context limits) and inter-rater reliability comparable to a blinded panel of domain experts during the systematic screening of highly heterogeneous, multi-disciplinary scientific literature?
 - **Sub-Questions (SRQs)**:
-${(metadata.subResearchQuestions || []).map((q, idx) => `  ${idx + 1}. ${q}`).join('\n') || '  (None specified)'}
+  1. Architectural Efficiency: How must a distributed multi-persona LLM framework be structured to mitigate context-window limitations and minimize processing latency during large-scale full-text semantic extraction?
+  2. Methodological Reliability: What is the level of statistical agreement (Precision, Recall, and Kappa scores) between the autonomous AI screening decisions and the blinded human expert panel when processing high-heterogeneity literature?
 
 ### Outline Structure
-Each node contains a unique ID, indent depth, type, and text content:
-${nodesFormatted}
+The full hierarchical node structure will be provided in the attached \`.json\` file. Each node in the attached dataset contains a unique ID, indent depth, type, and text content. 
+
+*Example Structure (for reference only):*
+[ID: e50ae02b-7d44-4d28-a0ce-bceb3fd7abe7] [Depth: 0] [Type: SECTION] Research Methodology
+[ID: a24210f3-efcb-4e9b-b80e-0696d54121e6] [Depth: 1] [Type: TOPIC]   Pipeline Macro-Topology Design Of Systematic Review
+[ID: c9ee2c2a-9811-48f1-9cb4-a8383cc4458f] [Depth: 2] [Type: QUESTION]     What core operational limitations in traditional systematic reviews necessitate the development of an automated screening strategy?
+[ID: 51ffba94-e481-48ad-ace9-d1adce79ee6f] [Depth: 3] [Type: ANSWER]       Traditional systematic reviews require human experts to manually vet thousands of academic citations...
+
+**Please analyze the specific node data provided in the attached file.**
 
 ### Review Output Instructions
-Analyze each line and output a JSON array of specific inline critiques. You MUST respond ONLY with a valid JSON object matching the following structure:
+Analyze each node/line from the attached file and output a JSON array of specific inline critiques. You MUST respond ONLY with a valid JSON object matching the following structure:
 {
   "comments": [
     {
-      "lineId": "string",      // Must exactly match a node's UUID from the list above
-      "commentText": "string"  // Direct, constructive academic critique for this line
+      "lineId": "string",      // Must exactly match the node's UUID from the attached file
+      "commentText": "string"  // Direct, constructive academic critique assessing 5W1H phrasing, keyword chaining, structural progression, logical cohesion, and flow regressions.
     }
   ]
 }
 
 CRITICAL RULES:
-1. Provide actionable academic feedback (logical gaps, phrasing issues, structure violations, missing proof paths).
-2. Return ONLY the raw JSON object. Do not include markdown code fence formatting (like \`\`\`json) or conversational text. Start directly with { and end with }.`;
+1. Provide highly actionable academic feedback (identifying logical gaps, phrasing issues, structure violations, missing proof paths, flow regressions, or cohesion breaks).
+2. Ensure you evaluate the logic strictly based on sequential semantic validation architecture, rather than defaulting to simple keyword-matching evaluations.
+3. Return ONLY the raw JSON object. Do not include markdown code fence formatting (like \`\`\`json) or conversational text. Start directly with { and end with }.`;
   };
 
   const handleCopyPrompt = () => {
@@ -183,7 +187,7 @@ CRITICAL RULES:
   };
 
   const handleDownloadOtln = () => {
-    // Generate clean .otln outline file
+    // Generate clean .json outline file
     const otlnData = {
       metadata: {
         writingGoal: metadata.writingGoal,
@@ -200,7 +204,7 @@ CRITICAL RULES:
     )}`;
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', jsonString);
-    downloadAnchor.setAttribute('download', `${title.replace(/\s+/g, '_') || 'Outline'}.otln`);
+    downloadAnchor.setAttribute('download', `${getSafeExportFilename(project)}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -213,7 +217,7 @@ CRITICAL RULES:
     )}`;
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', jsonString);
-    downloadAnchor.setAttribute('download', `${title.replace(/\s+/g, '_') || 'Project'}.otln-project`);
+    downloadAnchor.setAttribute('download', `${getSafeExportFilename(project)}.otln-project`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -645,7 +649,7 @@ CRITICAL RULES:
           >
             <span className="flex items-center gap-2">
               <FileDown className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" />
-              Download Outline (.otln)
+              Download Outline (.json)
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           </button>

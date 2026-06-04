@@ -49,7 +49,7 @@ Build the Dashboard interface. Implement project creation, deletion, list viewin
    - **Delete**: Prompts for confirmation and deletes the project from IndexedDB.
    - **Export (`.otln-project`)**: Exports the entire project object (metadata, outline data, commits, reviews, etc.) as a JSON file matching the `.otln-project` extension.
    - **Import (`.otln-project`)**: Allows file uploads of `.otln-project` files, validates the structure, and saves them to IndexedDB.
-   - **Import Review (`.otln`)**: Simple dashboard hook to import external review schema directly.
+   - **Import Review (`.json`)**: Simple dashboard hook to import external review schema directly.
 3. **Layout & Clean UI**:
    - Modern dashboard design with glassmorphic cards, harmonized CSS transition states, and responsive styling.
 
@@ -135,7 +135,7 @@ Build the right-side analysis sidebar. Perform real-time validation of structure
 ## Epoch 5: Workflow Tabs & PDF/JSON Export
 
 ### Objective
-Build the top workflow navigation and implement the Metadata editing view and Export engine (customizable PDF preview and copiable `.otln` LLM review package).
+Build the top workflow navigation and implement the Metadata editing view and Export engine (customizable PDF preview and copiable `.json` LLM review package).
 
 ### Steps
 1. **Top Navigation Panel**:
@@ -149,15 +149,15 @@ Build the top workflow navigation and implement the Metadata editing view and Ex
    - PDF Preview showing live pagination layout based on selected config.
    - PDF configuration options (Right sidebar): Paper Size (A4, Letter, etc.), Orientation (Portrait, Landscape), and Margins.
    - Compile a printable print-stylesheet or use a library like `jspdf` / html-to-pdf to export clean vector PDF documents.
-5. **`.otln` LLM Review Export**:
-   - Right sidebar: Download button for `.otln` file (JSON containing metadata and nodes mapped by unique IDs).
+5. **`.json` LLM Review Export**:
+   - Right sidebar: Download button for `.json` file (JSON containing metadata and nodes mapped by unique IDs).
    - Left preview pane: Displays a copyable prompt optimized to guide an LLM (Gemini, ChatGPT, Claude) to review the outline file and return feedback in a strict JSON format structure matching line IDs.
 
 ### Verification Plan
 - Navigate between all four workflow tabs and verify components mount correctly.
 - Modify metadata in the metadata tab and verify changes reflect in the editor and IndexedDB.
 - Change PDF margins and paper sizes; verify preview panel adjusts layouts.
-- Download the `.otln` file and check that its JSON formatting contains valid line IDs and metadata.
+- Download the `.json` file and check that its JSON formatting contains valid line IDs and metadata.
 - Copy prompt, paste into clipboard, and verify prompt text correctly explains the required JSON review format.
 
 ---

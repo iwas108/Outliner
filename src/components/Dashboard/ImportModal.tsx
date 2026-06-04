@@ -114,7 +114,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           onImportProject(parsedProject);
           setStatus('success');
         } else {
-          // Validate .otln review schema
+          // Validate .json review schema
           if (!targetProjectId) {
             throw new Error('Target project not specified.');
           }
@@ -191,7 +191,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {mode === 'project'
               ? 'Select a compiled backup .otln-project file to restore your work.'
-              : 'Select an LLM review comments .otln file (JSON format) containing comments matched by outline IDs.'}
+              : 'Select an LLM review comments .json file (JSON format) containing comments matched by outline IDs.'}
           </p>
 
           {/* Drag & Drop Area */}
@@ -212,7 +212,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileChange}
-                accept={mode === 'project' ? '.otln-project,application/json' : '.otln,application/json'}
+                accept={mode === 'project' ? '.otln-project,application/json' : '.json,application/json'}
                 className="hidden"
               />
               <Upload className="w-8 h-8 text-slate-400 mb-2 stroke-1" />

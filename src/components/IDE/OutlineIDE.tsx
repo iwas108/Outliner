@@ -24,6 +24,7 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
   const [debounceTimeout, setDebounceTimeout] = useState<any | null>(null);
   const [colorTaggingEnabled, setColorTaggingEnabled] = useState(false);
+  const [showStructureLine, setShowStructureLine] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   // Load project and config on mount
@@ -40,10 +41,14 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
           }
         }
 
-        // Load color tagging config
+        // Load color tagging and structure line configs
         const savedColorConfig = await getConfig('colorTagging');
         if (typeof savedColorConfig === 'boolean') {
           setColorTaggingEnabled(savedColorConfig);
+        }
+        const savedShowStructureLine = await getConfig('showStructureLine');
+        if (typeof savedShowStructureLine === 'boolean') {
+          setShowStructureLine(savedShowStructureLine);
         }
       } catch (err) {
         console.error('Failed to load project details:', err);
@@ -116,6 +121,15 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
       await saveConfig('colorTagging', enabled);
     } catch (err) {
       console.error('Failed to save color tagging preference:', err);
+    }
+  };
+
+  const handleShowStructureLineToggle = async (enabled: boolean) => {
+    setShowStructureLine(enabled);
+    try {
+      await saveConfig('showStructureLine', enabled);
+    } catch (err) {
+      console.error('Failed to save show structure line preference:', err);
     }
   };
 
@@ -224,6 +238,8 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
                 nodes={project.nodes}
                 colorTaggingEnabled={colorTaggingEnabled}
                 onColorTaggingToggle={handleColorTaggingToggle}
+                showStructureLine={showStructureLine}
+                onShowStructureLineToggle={handleShowStructureLineToggle}
                 keywordColors={keywordColors}
                 focusedIndex={focusedIndex}
                 setFocusedIndex={setFocusedIndex}
@@ -241,6 +257,8 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
               nodes={project.nodes}
               colorTaggingEnabled={colorTaggingEnabled}
               onColorTaggingToggle={handleColorTaggingToggle}
+              showStructureLine={showStructureLine}
+              onShowStructureLineToggle={handleShowStructureLineToggle}
               onFocusLine={handleFocusLine}
               maxLevel={project.metadata.maxLevel || 12}
             />

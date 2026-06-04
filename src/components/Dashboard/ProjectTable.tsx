@@ -111,7 +111,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                     <button
                       onClick={() => onImportReviewRequest(project.id)}
                       className="p-2 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-                      title="Import Review (.otln)"
+                      title="Import Review (.json)"
                     >
                       <MessageSquarePlus className="w-4 h-4" />
                     </button>

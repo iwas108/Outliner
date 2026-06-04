@@ -8,6 +8,8 @@ interface AnalysisSidebarProps {
   nodes: OutlineNode[];
   colorTaggingEnabled: boolean;
   onColorTaggingToggle: (enabled: boolean) => void;
+  showStructureLine: boolean;
+  onShowStructureLineToggle: (enabled: boolean) => void;
   onFocusLine: (id: string) => void;
   maxLevel?: number;
 }
@@ -16,6 +18,8 @@ export const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   nodes,
   colorTaggingEnabled,
   onColorTaggingToggle,
+  showStructureLine,
+  onShowStructureLineToggle,
   onFocusLine,
   maxLevel = 12,
 }) => {
@@ -67,6 +71,29 @@ export const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
             title={colorTaggingEnabled ? 'Disable Color Tagging' : 'Enable Color Tagging'}
           >
             {colorTaggingEnabled ? <Eye className="w-4.5 h-4.5" /> : <EyeOff className="w-4.5 h-4.5" />}
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3">
+          <div className="flex flex-col gap-0.5 select-none">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Show Structure Line
+            </span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-550">
+              Show connection between hierarchy
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onShowStructureLineToggle(!showStructureLine)}
+            className={`p-1.5 rounded-lg border transition-all ${
+              showStructureLine
+                ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/40 text-purple-600 dark:text-purple-400'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-650'
+            }`}
+            title={showStructureLine ? 'Disable Structure Line' : 'Enable Structure Line'}
+          >
+            {showStructureLine ? <Eye className="w-4.5 h-4.5" /> : <EyeOff className="w-4.5 h-4.5" />}
           </button>
         </div>
       </div>
