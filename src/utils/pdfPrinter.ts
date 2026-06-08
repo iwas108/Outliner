@@ -319,7 +319,7 @@ ${indentStyles}
       </div>
 
       <div class="page-footer">
-        <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner &#8599;</a>
+        <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner (https://iwas108.github.io/Outliner) &#8599;</a>
         <span>${escapeHtml(revisionText)}</span>
         <span class="page-footer-page"></span>
       </div>

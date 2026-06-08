@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "compromise": "^14.15.1",
+    "docx": "^9.7.1",
     "lucide-react": "^1.17.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

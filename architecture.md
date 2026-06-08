@@ -148,7 +148,8 @@ src/
 ├── utils/
 │   ├── outlineRules.ts        // tree structural constraints
 │   ├── analyzer.ts            // 5W1H and keyword analysis engine
-│   └── pdfPrinter.ts          // Print-to-PDF iframe engine
+│   ├── pdfPrinter.ts          // Print-to-PDF iframe engine
+│   └── docxPrinter.ts         // Word export generator using docx library
 ├── App.tsx
 ├── main.tsx
 └── index.css
@@ -192,6 +193,7 @@ src/
 - **Formatted Metadata & Custom Footers**: Styles metadata display items as cards with indigo left-accent borders (`border-left: 3px solid #6366f1`) and light backgrounds. Injects a custom footer at the bottom of printed pages utilizing native CSS `@page` margin boxes (`@bottom-left` for branding, `@bottom-center` for revision/commit information, and `@bottom-right` for native page counts `Page X / Y`) styled with divider borders.
 
 ### File Export Formats
+- **`.docx` (Word Document)**: Formats outline structure, dynamic indentation, spacing configurations, and keyword highlights into an OOXML Word Document file format using the `docx` library. Translates HSL highlights to hex shading and structures metadata inside a 2-column key-value table.
 - **`.json` (JSON Outline File)**: Standard lightweight exchange format containing ONLY outline metadata (goal, MRQ, SRQs) and nodes array (mapped by ID, type, text, depth). Exported with shortened safe titles followed by `_rev-X` or `_original`.
 - **`.otln-project` (Full Project Backup)**: Serializes the entire IndexedDB database record (including revision commits and review comments) for full workspace restoration. Exported with safe, version-appended filenames.
 - **LLM Review Prompt Generator**: Injects the active outline content and research parameters into an instruction prompt asking the LLM to return feedback in a strict JSON comment schema matching line UUIDs.

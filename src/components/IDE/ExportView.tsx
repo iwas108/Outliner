@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Project, ProjectMetadata } from '../../db/indexedDB';
 import { printOutline, getSafeExportFilename } from '../../utils/pdfPrinter';
+import { exportOutlineToDocx } from '../../utils/docxPrinter';
 import {
   Printer,
   FileText,
@@ -237,6 +238,14 @@ CRITICAL RULES:
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+  };
+
+  const handleDownloadDocx = async () => {
+    try {
+      await exportOutlineToDocx(project);
+    } catch (err) {
+      console.error('Failed to export to DOCX:', err);
+    }
   };
 
   // Convert mm to screen representation pixels (scaling factor)
@@ -675,8 +684,19 @@ CRITICAL RULES:
           </h3>
 
           <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed mb-1">
-            Download your outline files for full backup restores.
+            Download your outline files for Word processors or full backup restores.
           </p>
+
+          <button
+            onClick={handleDownloadDocx}
+            className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-350 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm group"
+          >
+            <span className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
+              Export to Word (.docx)
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          </button>
 
           <button
             onClick={handleDownloadBackup}
