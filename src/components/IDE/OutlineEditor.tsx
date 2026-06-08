@@ -17,7 +17,7 @@ interface OutlineEditorProps {
   onColorTaggingToggle?: (enabled: boolean) => void;
   showStructureLine?: boolean;
   onShowStructureLineToggle?: (enabled: boolean) => void;
-  keywordColors: { [word: string]: string };
+  keywordColors: { [nodeId: string]: { [word: string]: string } };
   focusedIndex: number | null;
   setFocusedIndex: (index: number | null) => void;
   onNodesChange: (newNodes: OutlineNode[]) => void;
@@ -801,7 +801,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
                 canIndent={canIndent(nodes, index, maxDepth)}
                 canOutdent={canOutdent(nodes, index)}
                 colorTaggingEnabled={colorTaggingEnabled}
-                keywordColors={keywordColors}
+                keywordColors={keywordColors[node.id] || {}}
                 onTextChange={handleTextChange}
                 onIndent={handleIndent}
                 onOutdent={handleOutdent}

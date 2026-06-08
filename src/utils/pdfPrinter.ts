@@ -63,7 +63,7 @@ export function printOutline(project: Project): void {
   // Calculate repeat keywords colors (light background mode for printing)
   const keywordColors = getKeywordColors(nodes, false);
 
-  const renderHighlightTextHtml = (text: string, depth: number) => {
+  const renderHighlightTextHtml = (text: string, depth: number, nodeId: string) => {
     if (!text) return '';
     const tokens = text.split(/(\s+|[.,\/#!$%\^&\*;:{}=\-_`~()?])/);
 
@@ -72,10 +72,12 @@ export function printOutline(project: Project): void {
       return escapeHtml(text);
     }
 
+    const nodeKeywordColors = keywordColors[nodeId] || {};
+
     return tokens.map((token) => {
       const cleanWord = token.toLowerCase();
-      if (keywordColors && keywordColors[cleanWord]) {
-        const [bg, fg] = keywordColors[cleanWord].split('|');
+      if (nodeKeywordColors && nodeKeywordColors[cleanWord]) {
+        const [bg, fg] = nodeKeywordColors[cleanWord].split('|');
         return `<span style="background-color: ${bg}; color: ${fg}; padding: 0.5px 2px; border-radius: 1px; font-weight: 500; display: inline; white-space: pre; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${escapeHtml(token)}</span>`;
       }
       return escapeHtml(token);
@@ -91,36 +93,11 @@ export function printOutline(project: Project): void {
   // Build the print styles
   const styles = `
     @page {
+
       size: ${pageSize} ${orientation};
       margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
-      @bottom-left {
-        content: "Made with Outlined: https://iwas108.github.io/Outliner";
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 8px;
-        color: #64748b;
-        font-weight: 550;
-        border-top: 1px solid #e2e8f0;
-        padding-top: 0px;
-      }
-      @bottom-center {
-        content: "${escapeHtml(revisionText)}";
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 8px;
-        color: #64748b;
-        font-weight: 550;
-        border-top: 1px solid #e2e8f0;
-        padding-top: 0px;
-      }
-      @bottom-right {
-        content: "Page " counter(page) " / " counter(pages);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 8px;
-        color: #64748b;
-        font-weight: 550;
-        border-top: 1px solid #e2e8f0;
-        padding-top: 0px;
-      }
     }
+
     @media print {
       body {
         background: #fff;
@@ -234,7 +211,35 @@ export function printOutline(project: Project): void {
       margin-bottom: 2px;
     }
 ${lineSpacingStyles}
-${indentStyles}  `;
+${indentStyles}
+    .page-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #e2e8f0;
+      padding: 4px 0 2px 0;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 8px;
+      color: #64748b;
+      font-weight: 550;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page-footer a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    /* CSS counter for page numbers inside the fixed footer */
+    .page-footer-page::after {
+      content: "Page " counter(page) " / " counter(pages);
+    }
+  `;
 
   // Format nodes as HTML
   const nodesHtml = nodes
@@ -252,7 +257,7 @@ ${indentStyles}  `;
       }
 
       const contentHtml = node.text
-        ? renderHighlightTextHtml(node.text, node.depth)
+        ? renderHighlightTextHtml(node.text, node.depth, node.id)
         : escapeHtml('(Empty Line)');
 
       return `
@@ -311,6 +316,12 @@ ${indentStyles}  `;
       </div>
       <div class="outline-container">
         ${nodesHtml}
+      </div>
+
+      <div class="page-footer">
+        <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner &#8599;</a>
+        <span>${escapeHtml(revisionText)}</span>
+        <span class="page-footer-page"></span>
       </div>
 
     </body>

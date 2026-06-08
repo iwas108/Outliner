@@ -29,6 +29,9 @@ export const ExportView: React.FC<ExportViewProps> = ({ project, onSaveProject }
   const [copied, setCopied] = useState(false);
   const [showPerLevel, setShowPerLevel] = useState(false);
 
+  // Calculate repeat keywords colors once (Always light mode colors for mockup sheet)
+  const keywordColors = React.useMemo(() => getKeywordColors(project.nodes, false), [project.nodes]);
+
   // Destructure config details
   const { title, metadata } = project;
 
@@ -47,10 +50,9 @@ export const ExportView: React.FC<ExportViewProps> = ({ project, onSaveProject }
   } = metadata;
 
   // Render highlighted text inside mockup page
-  const renderMockupHighlight = (text: string, depth: number) => {
+  const renderMockupHighlight = (text: string, depth: number, nodeId: string) => {
     if (!text) return '';
     const tokens = text.split(/(\s+|[.,\/#!$%\^&\*;:{}=\-_`~()?])/);
-    const keywordColors = getKeywordColors(project.nodes, false); // Always light mode colors for mockup sheet
 
     // Check if highlights are enabled for this specific level and depth >= 2
     const isHighlightEnabled = depth >= 2 && (levelHighlighting[depth] !== undefined ? levelHighlighting[depth] : includeHighlighting);
@@ -58,10 +60,12 @@ export const ExportView: React.FC<ExportViewProps> = ({ project, onSaveProject }
       return text;
     }
 
+    const nodeKeywordColors = keywordColors[nodeId] || {};
+
     return tokens.map((token, idx) => {
       const cleanWord = token.toLowerCase();
-      if (keywordColors && keywordColors[cleanWord]) {
-        const [bg, fg] = keywordColors[cleanWord].split('|');
+      if (nodeKeywordColors && nodeKeywordColors[cleanWord]) {
+        const [bg, fg] = nodeKeywordColors[cleanWord].split('|');
         return (
           <span
             key={idx}
@@ -354,7 +358,7 @@ CRITICAL RULES:
                           <span className="text-[9px] font-bold text-slate-400/80 mr-0.5">{prefix}</span>
                           {node.text ? (
                             isHighlightEnabled
-                              ? renderMockupHighlight(node.text, node.depth)
+                              ? renderMockupHighlight(node.text, node.depth, node.id)
                               : node.text
                           ) : (
                             <span className="text-slate-300 italic">(Empty Line)</span>

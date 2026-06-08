@@ -25,6 +25,28 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
   const [colorTaggingEnabled, setColorTaggingEnabled] = useState(false);
   const [showStructureLine, setShowStructureLine] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [keywordColors, setKeywordColors] = useState<{ [nodeId: string]: { [word: string]: string } }>({});
+
+  useEffect(() => {
+    if (project?.nodes && focusedIndex === null) {
+      const colors = getKeywordColors(project.nodes, resolvedTheme === 'dark');
+      setKeywordColors(colors);
+    }
+  }, [focusedIndex, project?.nodes, resolvedTheme]);
+
+  const handleTabClick = (tab: TabType) => {
+    if (tab === activeTab) return;
+    if (tab === 'export') {
+      setIsSwitching(true);
+      setTimeout(() => {
+        setActiveTab(tab);
+        setIsSwitching(false);
+      }, 150);
+    } else {
+      setActiveTab(tab);
+    }
+  };
 
   // Load project and config on mount
   useEffect(() => {
@@ -232,9 +254,6 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
     );
   }
 
-  // Calculate repeat keywords color palette
-  const keywordColors = getKeywordColors(project.nodes, resolvedTheme === 'dark');
-
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6 min-h-screen">
 
@@ -289,7 +308,7 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
               return (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabClick(tab)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab
                       ? 'bg-white dark:bg-slate-800 shadow-sm text-purple-600 dark:text-purple-300'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -305,70 +324,79 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
 
       {/* Main Workspace Render */}
       <main className="flex-grow flex flex-col justify-start">
-        {activeTab === 'metadata' && (
-          <MetadataEditor
-            initialMetadata={project.metadata}
-            initialTitle={project.title}
-            onSave={handleMetadataSave}
-          />
-        )}
-
-        {activeTab === 'editing' && (
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="flex-grow w-full md:w-auto">
-              <OutlineEditor
-                nodes={project.nodes}
-                colorTaggingEnabled={colorTaggingEnabled}
-                onColorTaggingToggle={handleColorTaggingToggle}
-                showStructureLine={showStructureLine}
-                onShowStructureLineToggle={handleShowStructureLineToggle}
-                keywordColors={keywordColors}
-                focusedIndex={focusedIndex}
-                setFocusedIndex={setFocusedIndex}
-                onNodesChange={handleNodesChange}
-                maxLevel={project.metadata.maxLevel || 12}
-                editorLineSpacing={project.metadata.editorLineSpacing}
-                editorLineHeight={project.metadata.editorLineHeight}
-                editorIndentSpacing={project.metadata.editorIndentSpacing}
-                editorLevelLineSpacing={project.metadata.editorLevelLineSpacing}
-                editorLevelLineHeight={project.metadata.editorLevelLineHeight}
-                editorLevelIndentSpacing={project.metadata.editorLevelIndentSpacing}
-                reviews={project.reviews || []}
-                onSolveComment={handleSolveComment}
-                commits={project.commits || []}
-                onCreateCommit={handleCreateCommit}
-                onRevertCommit={handleRevertCommit}
-                onForkCommit={handleForkCommit}
-                onSaveReviews={handleSaveReviews}
-              />
-            </div>
-            <AnalysisSidebar
-              nodes={project.nodes}
-              colorTaggingEnabled={colorTaggingEnabled}
-              onColorTaggingToggle={handleColorTaggingToggle}
-              showStructureLine={showStructureLine}
-              onShowStructureLineToggle={handleShowStructureLineToggle}
-              onFocusLine={handleFocusLine}
-              maxLevel={project.metadata.maxLevel || 12}
-              reviews={project.reviews || []}
-              onSolveComment={handleSolveComment}
-              onSaveReviews={handleSaveReviews}
-              commits={project.commits || []}
-              onCreateCommit={handleCreateCommit}
-              onRevertCommit={handleRevertCommit}
-              onForkCommit={handleForkCommit}
-            />
+        {isSwitching ? (
+          <div className="flex-grow flex flex-col items-center justify-center py-20 text-slate-400">
+            <RefreshCw className="w-8 h-8 animate-spin text-purple-500 mb-2" />
+            <p className="text-xs font-semibold">Preparing export view, please wait...</p>
           </div>
-        )}
+        ) : (
+          <>
+            {activeTab === 'metadata' && (
+              <MetadataEditor
+                initialMetadata={project.metadata}
+                initialTitle={project.title}
+                onSave={handleMetadataSave}
+              />
+            )}
 
-        {activeTab === 'export' && (
-          <ExportView
-            project={project}
-            onSaveProject={(updatedProject) => {
-              setProject(updatedProject);
-              triggerAutosave(updatedProject);
-            }}
-          />
+            {activeTab === 'editing' && (
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="flex-grow w-full md:w-auto">
+                  <OutlineEditor
+                    nodes={project.nodes}
+                    colorTaggingEnabled={colorTaggingEnabled}
+                    onColorTaggingToggle={handleColorTaggingToggle}
+                    showStructureLine={showStructureLine}
+                    onShowStructureLineToggle={handleShowStructureLineToggle}
+                    keywordColors={keywordColors}
+                    focusedIndex={focusedIndex}
+                    setFocusedIndex={setFocusedIndex}
+                    onNodesChange={handleNodesChange}
+                    maxLevel={project.metadata.maxLevel || 12}
+                    editorLineSpacing={project.metadata.editorLineSpacing}
+                    editorLineHeight={project.metadata.editorLineHeight}
+                    editorIndentSpacing={project.metadata.editorIndentSpacing}
+                    editorLevelLineSpacing={project.metadata.editorLevelLineSpacing}
+                    editorLevelLineHeight={project.metadata.editorLevelLineHeight}
+                    editorLevelIndentSpacing={project.metadata.editorLevelIndentSpacing}
+                    reviews={project.reviews || []}
+                    onSolveComment={handleSolveComment}
+                    commits={project.commits || []}
+                    onCreateCommit={handleCreateCommit}
+                    onRevertCommit={handleRevertCommit}
+                    onForkCommit={handleForkCommit}
+                    onSaveReviews={handleSaveReviews}
+                  />
+                </div>
+                <AnalysisSidebar
+                  nodes={project.nodes}
+                  colorTaggingEnabled={colorTaggingEnabled}
+                  onColorTaggingToggle={handleColorTaggingToggle}
+                  showStructureLine={showStructureLine}
+                  onShowStructureLineToggle={handleShowStructureLineToggle}
+                  onFocusLine={handleFocusLine}
+                  maxLevel={project.metadata.maxLevel || 12}
+                  reviews={project.reviews || []}
+                  onSolveComment={handleSolveComment}
+                  onSaveReviews={handleSaveReviews}
+                  commits={project.commits || []}
+                  onCreateCommit={handleCreateCommit}
+                  onRevertCommit={handleRevertCommit}
+                  onForkCommit={handleForkCommit}
+                />
+              </div>
+            )}
+
+            {activeTab === 'export' && (
+              <ExportView
+                project={project}
+                onSaveProject={(updatedProject) => {
+                  setProject(updatedProject);
+                  triggerAutosave(updatedProject);
+                }}
+              />
+            )}
+          </>
         )}
       </main>
 
