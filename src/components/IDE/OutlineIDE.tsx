@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getProject, saveProject, getConfig, saveConfig } from '../../db/indexedDB';
-import type { Project, ProjectMetadata, OutlineNode } from '../../db/indexedDB';
+import type { Project, ProjectMetadata, OutlineNode, ReviewComment, ProjectCommit } from '../../db/indexedDB';
 import { MetadataEditor } from './MetadataEditor';
 import { OutlineEditor } from './OutlineEditor';
 import { AnalysisSidebar } from './AnalysisSidebar';
 import { ExportView } from './ExportView';
-import { ReviewView } from './ReviewView';
 import { getKeywordColors } from '../../utils/analyzer';
 import { useTheme } from '../../context/ThemeContext';
 import { ArrowLeft, CheckCircle2, RefreshCw } from 'lucide-react';
@@ -15,7 +14,7 @@ interface OutlineIDEProps {
   onBackToDashboard: () => void;
 }
 
-type TabType = 'metadata' | 'editing' | 'export' | 'review';
+type TabType = 'metadata' | 'editing' | 'export';
 
 export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashboard }) => {
   const { resolvedTheme } = useTheme();
@@ -141,6 +140,89 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
     }
   };
 
+  // ── Review / Critique handlers (lifted from ReviewView) ──
+
+  const handleSaveReviews = (newComments: ReviewComment[]) => {
+    if (!project) return;
+    const updatedReviews = [...(project.reviews || []), ...newComments];
+    const updatedProject: Project = {
+      ...project,
+      reviews: updatedReviews,
+      updatedAt: new Date().toISOString(),
+    };
+    setProject(updatedProject);
+    triggerAutosave(updatedProject);
+  };
+
+  const handleSolveComment = (commentId: string) => {
+    if (!project) return;
+    const updatedReviews = (project.reviews || []).map((r) =>
+      r.id === commentId ? { ...r, solved: true } : r
+    );
+    const updatedProject: Project = {
+      ...project,
+      reviews: updatedReviews,
+      updatedAt: new Date().toISOString(),
+    };
+    setProject(updatedProject);
+    triggerAutosave(updatedProject);
+  };
+
+  // ── Commit / Version handlers (lifted from ReviewView) ──
+
+  const handleCreateCommit = (message: string) => {
+    if (!project) return;
+    const newCommit: ProjectCommit = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      comment: message,
+      nodesSnapshot: JSON.parse(JSON.stringify(project.nodes)),
+      metadataSnapshot: JSON.parse(JSON.stringify(project.metadata)),
+    };
+
+    const updatedProject: Project = {
+      ...project,
+      commits: [newCommit, ...(project.commits || [])],
+      updatedAt: new Date().toISOString(),
+    };
+    setProject(updatedProject);
+    triggerAutosave(updatedProject);
+  };
+
+  const handleRevertCommit = (commit: ProjectCommit) => {
+    if (!project) return;
+    const updatedProject: Project = {
+      ...project,
+      nodes: JSON.parse(JSON.stringify(commit.nodesSnapshot)),
+      metadata: JSON.parse(JSON.stringify(commit.metadataSnapshot)),
+      updatedAt: new Date().toISOString(),
+    };
+    setProject(updatedProject);
+    triggerAutosave(updatedProject);
+  };
+
+  const handleForkCommit = async (commit: ProjectCommit, forkTitle: string) => {
+    if (!forkTitle.trim()) return;
+
+    const newProject: Project = {
+      id: crypto.randomUUID(),
+      title: forkTitle.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      metadata: JSON.parse(JSON.stringify(commit.metadataSnapshot)),
+      nodes: JSON.parse(JSON.stringify(commit.nodesSnapshot)),
+      commits: [],
+      reviews: [],
+    };
+
+    try {
+      await saveProject(newProject);
+      onBackToDashboard();
+    } catch (err) {
+      console.error('Failed to fork project:', err);
+    }
+  };
+
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400">
@@ -203,7 +285,7 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
 
           {/* Tab Navigation */}
           <div className="flex bg-slate-200/50 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200 dark:border-slate-800/80">
-            {(['metadata', 'editing', 'export', 'review'] as TabType[]).map((tab) => {
+            {(['metadata', 'editing', 'export'] as TabType[]).map((tab) => {
               return (
                 <button
                   key={tab}
@@ -251,6 +333,13 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
                 editorLevelLineSpacing={project.metadata.editorLevelLineSpacing}
                 editorLevelLineHeight={project.metadata.editorLevelLineHeight}
                 editorLevelIndentSpacing={project.metadata.editorLevelIndentSpacing}
+                reviews={project.reviews || []}
+                onSolveComment={handleSolveComment}
+                commits={project.commits || []}
+                onCreateCommit={handleCreateCommit}
+                onRevertCommit={handleRevertCommit}
+                onForkCommit={handleForkCommit}
+                onSaveReviews={handleSaveReviews}
               />
             </div>
             <AnalysisSidebar
@@ -261,6 +350,13 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
               onShowStructureLineToggle={handleShowStructureLineToggle}
               onFocusLine={handleFocusLine}
               maxLevel={project.metadata.maxLevel || 12}
+              reviews={project.reviews || []}
+              onSolveComment={handleSolveComment}
+              onSaveReviews={handleSaveReviews}
+              commits={project.commits || []}
+              onCreateCommit={handleCreateCommit}
+              onRevertCommit={handleRevertCommit}
+              onForkCommit={handleForkCommit}
             />
           </div>
         )}
@@ -272,17 +368,6 @@ export const OutlineIDE: React.FC<OutlineIDEProps> = ({ projectId, onBackToDashb
               setProject(updatedProject);
               triggerAutosave(updatedProject);
             }}
-          />
-        )}
-
-        {activeTab === 'review' && (
-          <ReviewView
-            project={project}
-            onUpdateProject={(updatedProject) => {
-              setProject(updatedProject);
-              triggerAutosave(updatedProject);
-            }}
-            onBackToDashboard={onBackToDashboard}
           />
         )}
       </main>

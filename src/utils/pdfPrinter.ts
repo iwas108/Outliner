@@ -94,7 +94,7 @@ export function printOutline(project: Project): void {
       size: ${pageSize} ${orientation};
       margin: ${margins.top}mm ${margins.right}mm ${margins.bottom}mm ${margins.left}mm;
       @bottom-left {
-        content: "Made with Outliner";
+        content: "Made with Outlined: https://iwas108.github.io/Outliner";
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         font-size: 8px;
         color: #64748b;

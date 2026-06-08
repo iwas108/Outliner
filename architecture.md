@@ -7,7 +7,7 @@ This document acts as the core technical blueprint for the Outliner application.
 ## 1. Core Architecture Design
 
 The app follows **Clean Code Architecture** principles separated into layers:
-- **Presentation Layer (React Components)**: UI views and tabs (Dashboard, IDE Editor, Export, Review).
+- **Presentation Layer (React Components)**: UI views and tabs (Dashboard, IDE Editor, Export).
 - **Domain/Logic Layer**: State machines, syntax validators, 5W1H checkers, keyword trackers, and export formatters.
 - **Data Access Layer (IndexedDB Engine)**: Local persistent storage interfaces.
 
@@ -133,13 +133,12 @@ src/
 │   │   ├── NewProjectModal.tsx
 │   │   └── ImportModal.tsx
 │   └── IDE/
-│       ├── OutlineIDE.tsx
+│       ├── OutlineIDE.tsx        // Hosts review/commit handlers, passes to children
 │       ├── MetadataEditor.tsx
-│       ├── OutlineEditor.tsx
-│       ├── OutlineLineItem.tsx
-│       ├── AnalysisSidebar.tsx
+│       ├── OutlineEditor.tsx     // Inline comment badges, fullscreen critique/timeline dock panels
+│       ├── OutlineLineItem.tsx   // Inline comment popover on lines with review feedback
+│       ├── AnalysisSidebar.tsx   // Editor Options + Critique Feed + Diagnostics + Version Timeline
 │       ├── ExportView.tsx
-│       ├── ReviewView.tsx
 │       ├── PasteReviewModal.tsx
 │       └── CommitModal.tsx
 ├── context/
@@ -201,10 +200,12 @@ src/
 
 ## 7. Collaboration & Version Control
 
-### Review Comments & Schema Validator
+### Review Comments & Schema Validator (Integrated into Editing Tab)
 - **Critique Paste Validator**: Validates that inputted text is syntactically sound JSON matching the schema `comments: { lineId: string; commentText: string }[]`. Ensures comments map to currently existing node UUIDs in the database, ignoring orphan keys.
-- **Comment Overlay Gutters**: Renders unresolved critique cards in a scroll-highlighted sidebar, linking each card to its corresponding line element in the outline. Includes click-to-focus triggers.
-- **State Progression**: Resolving a comment toggles `solved: true` in the database, hiding it from the screen, and double-clicking outline elements permits instant inline text editing.
+- **Critique Feed Sidebar Card**: Renders unresolved critique cards in a collapsible card inside `AnalysisSidebar`, linking each card to its corresponding line element in the outline. Includes click-to-focus triggers and an Import button to open the `PasteReviewModal`.
+- **Inline Comment Popovers**: Lines with unresolved comments display a purple badge icon. Clicking the badge opens a popover positioned to the right of the line showing each comment with a "Solve" button. Replaces the old gutter-only overlay.
+- **Fullscreen Critique Dock Panel**: In fullscreen mode, a Critique Feed button in the floating dock toggles a popover panel with the full comment feed, Import, and Solve actions.
+- **State Progression**: Resolving a comment toggles `solved: true` in the database, hiding it from the popover, sidebar feed, and line badge.
 
 ### Version Checkpoints & Revision Snapshots
 - **Git-like Commit Snapshots**: Deep copies current nodes arrays and metadata parameters, wrapping them in a commit model containing custom user messages and generation timestamps.

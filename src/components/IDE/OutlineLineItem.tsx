@@ -1,6 +1,6 @@
-import React from 'react';
-import type { OutlineNode } from '../../db/indexedDB';
-import { ChevronRight, ChevronLeft, ChevronDown, Trash2, PlusCircle, HelpCircle, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import type { OutlineNode, ReviewComment } from '../../db/indexedDB';
+import { ChevronRight, ChevronLeft, ChevronDown, Trash2, PlusCircle, HelpCircle, CheckCircle2, ArrowUp, ArrowDown, MessageSquare, Check } from 'lucide-react';
 
 interface OutlineLineItemProps {
   node: OutlineNode;
@@ -28,6 +28,9 @@ interface OutlineLineItemProps {
   isCollapsible?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: (id: string) => void;
+  // Review comment props
+  lineComments?: ReviewComment[];
+  onSolveComment?: (commentId: string) => void;
 }
 
 export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
@@ -56,7 +59,34 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
   isCollapsible,
   isCollapsed,
   onToggleCollapse,
+  lineComments = [],
+  onSolveComment,
 }) => {
+  const [showCommentPopover, setShowCommentPopover] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Close popover on outside click or Escape
+  useEffect(() => {
+    if (!showCommentPopover) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setShowCommentPopover(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowCommentPopover(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showCommentPopover]);
+
+  const hasComments = lineComments.length > 0;
 
   // Whether this node should show color highlights (exclude section/topic)
   const shouldHighlight = colorTaggingEnabled && node.depth >= 2;
@@ -137,7 +167,9 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
       className={`group relative flex items-start w-full px-3 rounded-lg border transition-all duration-150 ${isActive
         ? 'bg-slate-100/75 dark:bg-slate-900/60 border-purple-500/35 dark:border-purple-550/25 shadow-sm'
-        : 'bg-transparent border-transparent hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
+        : hasComments
+          ? 'bg-purple-50/20 dark:bg-purple-950/5 border-purple-200/40 dark:border-purple-900/20 hover:bg-purple-50/40 dark:hover:bg-purple-950/10'
+          : 'bg-transparent border-transparent hover:bg-slate-50/50 dark:hover:bg-slate-900/30'
         }`}
       style={{
         paddingLeft: `${computedIndent}px`,
@@ -244,6 +276,65 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
                       ? 'Enter Question formulation...'
                       : 'Enter Answer details...'}
               </span>
+            )}
+          </div>
+        )}
+
+        {/* Comment Badge */}
+        {hasComments && (
+          <div className="relative flex-shrink-0 ml-2" ref={popoverRef}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCommentPopover(!showCommentPopover);
+              }}
+              className="flex items-center justify-center gap-1 p-1.5 bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/30 text-purple-600 dark:text-purple-400 rounded-lg transition-colors cursor-pointer"
+              title={`${lineComments.length} unresolved comment(s) — click to view`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span className="text-[9px] font-bold">{lineComments.length}</span>
+            </button>
+
+            {/* Comment Popover */}
+            {showCommentPopover && (
+              <div
+                className="absolute right-0 top-full mt-2 z-40 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-4 flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-150"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <MessageSquare className="w-3 h-3 text-purple-500" />
+                    Line Feedback
+                  </span>
+                  <span className="text-[9px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                    {lineComments.length} comment{lineComments.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-2.5 max-h-48 overflow-y-auto pr-1">
+                  {lineComments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="p-2.5 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col gap-2"
+                    >
+                      <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                        {comment.commentText}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSolveComment?.(comment.id);
+                        }}
+                        className="self-end flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+                      >
+                        <Check className="w-2.5 h-2.5" />
+                        Solve
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
