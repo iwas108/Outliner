@@ -139,8 +139,11 @@ export function check5W1H(text: string, type: 'section' | 'topic' | 'question' |
  *     preceding sibling question under the same parent. The first question
  *     under any parent has no chaining partners (it introduces a new thread).
  *
- *   - **Answer nodes**: Chain with their *parent question* (depth - 1).
- *     This provides direct Q → A coherence.
+ *   - **Answer nodes**:
+ *     - The **first** answer under a question chains with the parent question.
+ *     - The **2nd+ answers** chain with the immediately preceding sibling
+ *       answer AND the parent question. A violation is raised only if the
+ *       answer shares no keywords with *either* partner.
  *
  * Structural headers (Section depth 0, Topic depth 1) are never partners.
  */
@@ -161,14 +164,30 @@ function getChainingPartners(nodes: OutlineNode[], index: number): OutlineNode[]
 
   if (parentIndex === -1) return [];
 
-  // ── Answer nodes → chain with parent question ──
+  // ── Answer nodes → chain with previous sibling answer OR parent question ──
   if (node.type === 'answer') {
     const parent = nodes[parentIndex];
     // Only chain if the parent is a Q/A content node (depth >= 2)
-    if (parent.depth >= 2 && parent.text.trim()) {
-      return [parent];
+    if (parent.depth < 2 || !parent.text.trim()) return [];
+
+    // Look for the immediately preceding sibling answer (same depth, same parent scope)
+    let prevSiblingAnswer: OutlineNode | null = null;
+    for (let i = index - 1; i > parentIndex; i--) {
+      // Stop if we cross out of the parent's direct children scope
+      if (nodes[i].depth < node.depth) break;
+      if (nodes[i].depth === node.depth && nodes[i].type === 'answer' && nodes[i].text.trim()) {
+        prevSiblingAnswer = nodes[i];
+        break;
+      }
     }
-    return [];
+
+    if (prevSiblingAnswer) {
+      // 2nd+ answer: chain with previous sibling answer OR parent question
+      return [prevSiblingAnswer, parent];
+    }
+
+    // First answer under the parent question: chain with the parent question only
+    return [parent];
   }
 
   // ── Question nodes → chain with answers of the previous sibling question ──
@@ -235,8 +254,10 @@ function getChainingPartners(nodes: OutlineNode[], index: number): OutlineNode[]
  * Checks keyword chaining for the whole outline.
  *
  * A question violates chaining if it shares no keywords with the answer(s)
- * of the previous sibling question. An answer violates chaining if it
- * shares no keywords with its parent question.
+ * of the previous sibling question. The first answer under a question
+ * violates chaining if it shares no keywords with its parent question.
+ * The 2nd+ answers violate chaining if they share no keywords with either
+ * the immediately preceding sibling answer OR the parent question.
  */
 export function checkKeywordChaining(nodes: OutlineNode[]): { [nodeId: string]: string } {
   const violations: { [nodeId: string]: string } = {};
