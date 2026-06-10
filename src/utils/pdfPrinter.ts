@@ -214,7 +214,7 @@ ${lineSpacingStyles}
 ${indentStyles}
     .page-footer {
       position: fixed;
-      bottom: 0;
+      bottom: -${margins.bottom - 6}mm;
       left: 0;
       right: 0;
       display: flex;
