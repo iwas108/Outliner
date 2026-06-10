@@ -65,9 +65,9 @@ export async function exportOutlineToDocx(project: Project): Promise<void> {
   const {
     pageSize = 'A4',
     orientation = 'portrait',
-    margins = { top: 10, bottom: 20, left: 20, right: 20 },
+    margins = { top: 20, bottom: 20, left: 20, right: 20 },
     includeHighlighting = false,
-    lineSpacing = 1.5,
+    lineSpacing = 1.3,
     indentSpacing = 10,
     levelHighlighting = {},
     levelLineSpacing = {},
@@ -183,16 +183,16 @@ export async function exportOutlineToDocx(project: Project): Promise<void> {
     }),
     ...(metadata.subResearchQuestions && metadata.subResearchQuestions.length > 0
       ? metadata.subResearchQuestions.map((q, idx) =>
-          new Paragraph({
-            children: [new TextRun({ text: `${idx + 1}. ${q}`, size: 22, color: '334155', font: 'Arial' })],
-            spacing: { after: 60 },
-          })
-        )
+        new Paragraph({
+          children: [new TextRun({ text: `${idx + 1}. ${q}`, size: 22, color: '334155', font: 'Arial' })],
+          spacing: { after: 60 },
+        })
+      )
       : [
-          new Paragraph({
-            children: [new TextRun({ text: 'None', size: 22, color: '64748B', font: 'Arial', italics: true })],
-          }),
-        ]),
+        new Paragraph({
+          children: [new TextRun({ text: 'None', size: 22, color: '64748B', font: 'Arial', italics: true })],
+        }),
+      ]),
   ];
 
   const metadataTable = new Table({
@@ -271,24 +271,24 @@ export async function exportOutlineToDocx(project: Project): Promise<void> {
     const prefixRuns: TextRun[] = [];
 
     if (node.type === 'section') {
-      size = 32; // 16pt
+      size = 24; // 14pt
       bold = true;
       color = '0F172A';
       beforeSpacing = 360;
       afterSpacing = 120;
     } else if (node.type === 'topic') {
-      size = 28; // 14pt
+      size = 22; // 12pt
       bold = true;
       color = '1E293B';
       beforeSpacing = 200;
       afterSpacing = 80;
     } else if (node.type === 'question') {
-      size = 24; // 12pt
+      size = 20; // 11pt
       bold = true;
       color = '334155';
       prefixRuns.push(new TextRun({ text: 'Q: ', bold: true, color: '6366F1', font: 'Arial', size: 24 }));
     } else if (node.type === 'answer') {
-      size = 24; // 12pt
+      size = 20; // 11pt
       color = '475569';
       prefixRuns.push(new TextRun({ text: 'A: ', bold: true, color: '64748B', font: 'Arial', size: 24 }));
     }
