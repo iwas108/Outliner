@@ -126,109 +126,105 @@ export function check5W1H(text: string, type: 'section' | 'topic' | 'question' |
 }
 
 // ─────────────────────────────────────────────────────────
-// Chaining partners — strict scope
+// Chaining partners — sequential Q→A flow
 // ─────────────────────────────────────────────────────────
 
 /**
- * Returns the chaining partners for a Q/A node at `index`:
- *   - Its direct parent node (depth - 1)
- *   - Same-depth siblings that share the same parent
+ * Returns the chaining partners for a Q/A node at `index`.
  *
- * This restricts keyword matching to structurally adjacent lines,
- * preventing irrelevant global flood of highlights.
+ * The chaining model enforces sequential cohesion within a topic
+ * (and nested sub-topics) at every depth level:
+ *
+ *   - **Question nodes**: Chain with the *answer(s)* of the immediately
+ *     preceding sibling question under the same parent. The first question
+ *     under any parent has no chaining partners (it introduces a new thread).
+ *
+ *   - **Answer nodes**: Chain with their *parent question* (depth - 1).
+ *     This provides direct Q → A coherence.
+ *
+ * Structural headers (Section depth 0, Topic depth 1) are never partners.
  */
 function getChainingPartners(nodes: OutlineNode[], index: number): OutlineNode[] {
   const node = nodes[index];
-  const partners: OutlineNode[] = [];
+  if (node.depth <= 1) return []; // Sections and Topics don't chain
 
-  // Special handling for depth 2 question nodes (first level of questions under a topic)
-  if (node.depth === 2 && node.type === 'question') {
-    let parentIndex = -1;
-    for (let i = index - 1; i >= 0; i--) {
-      if (nodes[i].depth === 1) {
-        parentIndex = i;
-        break;
-      }
-      if (nodes[i].depth < 1) break;
-    }
-
-    if (parentIndex !== -1) {
-      let isFirstQuestion = true;
-      for (let i = parentIndex + 1; i < index; i++) {
-        if (nodes[i].depth === 2 && nodes[i].type === 'question') {
-          isFirstQuestion = false;
-          break;
-        }
-      }
-
-      if (isFirstQuestion) {
-        return []; // The first question of a topic should not link to anything
-      }
-
-      let prevQIndex = -1;
-      for (let i = index - 1; i > parentIndex; i--) {
-        if (nodes[i].depth === 2 && nodes[i].type === 'question') {
-          prevQIndex = i;
-          break;
-        }
-      }
-
-      if (prevQIndex !== -1) {
-        for (let i = prevQIndex + 1; i < index; i++) {
-          if (nodes[i].type === 'answer' && nodes[i].text.trim()) {
-            partners.push(nodes[i]);
-          }
-        }
-        return partners;
-      }
-    }
-  }
-
-  // 1. Find the parent (first node above with depth = node.depth - 1).
-  //    Only include the parent as a chaining partner if it is at depth >= 2
-  //    (i.e., skip Section [depth 0] and Topic [depth 1] parents — they are
-  //    structural headers, not semantic Q/A content nodes).
+  // ── Locate the structural parent ──
+  // Walk backwards to find the first node with depth = node.depth - 1.
   let parentIndex = -1;
   for (let i = index - 1; i >= 0; i--) {
     if (nodes[i].depth === node.depth - 1) {
       parentIndex = i;
-      // Only add if the parent itself is a Q/A-level node (depth >= 2)
-      if (nodes[i].depth >= 2) {
-        partners.push(nodes[i]);
-      }
       break;
     }
-    if (nodes[i].depth < node.depth - 1) break;
+    if (nodes[i].depth < node.depth - 1) break; // crossed boundary
   }
 
-  if (parentIndex === -1) return partners;
+  if (parentIndex === -1) return [];
 
-  // If parent is Section (depth 0) or Topic (depth 1), and there are no other Q/A nodes
-  // (depth >= 2) between parentIndex and index, then this is the first Q/A node under this topic/section.
-  // The first question of a topic should not link to anything.
-  if (nodes[parentIndex].depth <= 1) {
-    let isFirstQAUnderTopic = true;
+  // ── Answer nodes → chain with parent question ──
+  if (node.type === 'answer') {
+    const parent = nodes[parentIndex];
+    // Only chain if the parent is a Q/A content node (depth >= 2)
+    if (parent.depth >= 2 && parent.text.trim()) {
+      return [parent];
+    }
+    return [];
+  }
+
+  // ── Question nodes → chain with answers of the previous sibling question ──
+  if (node.type === 'question') {
+    // Determine the scope boundary: the parent's index defines the
+    // earliest position within which same-depth siblings live.
+
+    // Check whether this is the first question at this depth under this parent.
+    let isFirstQuestion = true;
     for (let i = parentIndex + 1; i < index; i++) {
-      if (nodes[i].depth >= 2) {
-        isFirstQAUnderTopic = false;
+      if (nodes[i].depth === node.depth && nodes[i].type === 'question') {
+        isFirstQuestion = false;
         break;
       }
+      // If we exit the parent's scope, stop scanning.
+      if (nodes[i].depth < node.depth - 1) break;
     }
-    if (isFirstQAUnderTopic) {
-      return [];
+
+    if (isFirstQuestion) {
+      return []; // First question under a parent introduces a new thread
     }
+
+    // Find the immediately preceding sibling question at the same depth.
+    let prevQIndex = -1;
+    for (let i = index - 1; i > parentIndex; i--) {
+      if (nodes[i].depth === node.depth && nodes[i].type === 'question') {
+        prevQIndex = i;
+        break;
+      }
+      // If we exit the parent's scope, stop scanning.
+      if (nodes[i].depth < node.depth - 1) break;
+    }
+
+    if (prevQIndex === -1) return [];
+
+    // Collect answers that are direct children of the previous question
+    // (depth = prevQ.depth + 1, type = 'answer') between prevQIndex and
+    // the current node index.
+    const partners: OutlineNode[] = [];
+    for (let i = prevQIndex + 1; i < index; i++) {
+      // Stop if we exit the previous question's subtree
+      if (nodes[i].depth <= nodes[prevQIndex].depth) break;
+      // Only collect direct children (depth = prevQ.depth + 1) that are answers
+      if (
+        nodes[i].depth === nodes[prevQIndex].depth + 1 &&
+        nodes[i].type === 'answer' &&
+        nodes[i].text.trim()
+      ) {
+        partners.push(nodes[i]);
+      }
+    }
+
+    return partners;
   }
 
-  // 2. Collect same-depth siblings under the same parent,
-  //    excluding the current node. Only depth >= 2 siblings are Q/A content.
-  for (let i = parentIndex + 1; i < nodes.length; i++) {
-    if (nodes[i].depth <= nodes[parentIndex].depth) break; // exited parent scope
-    if (i !== index && nodes[i].depth === node.depth && nodes[i].depth >= 2) {
-      partners.push(nodes[i]);
-    }
-  }
-
-  return partners;
+  return [];
 }
 
 // ─────────────────────────────────────────────────────────
@@ -237,8 +233,10 @@ function getChainingPartners(nodes: OutlineNode[], index: number): OutlineNode[]
 
 /**
  * Checks keyword chaining for the whole outline.
- * A node violates chaining if it shares NO keywords with its parent or siblings.
- * Scope is restricted: only compares against the direct parent + same-level siblings.
+ *
+ * A question violates chaining if it shares no keywords with the answer(s)
+ * of the previous sibling question. An answer violates chaining if it
+ * shares no keywords with its parent question.
  */
 export function checkKeywordChaining(nodes: OutlineNode[]): { [nodeId: string]: string } {
   const violations: { [nodeId: string]: string } = {};
@@ -265,8 +263,12 @@ export function checkKeywordChaining(nodes: OutlineNode[]): { [nodeId: string]: 
     });
 
     if (!hasChain) {
-      const partnerDesc = partners[0].type.toUpperCase();
-      violations[node.id] = `Keyword Chaining Violation: This line does not share any keywords with its ${partnerDesc} parent or same-level siblings.`;
+      if (node.type === 'question') {
+        violations[node.id] = `Keyword Chaining Violation: This question does not share any keywords with the ANSWER of the previous question. Add shared keywords for cohesion.`;
+      } else {
+        violations[node.id] = `Keyword Chaining Violation: This answer does not share any keywords with its parent QUESTION. Add shared keywords for coherence.`;
+      }
+
     }
   }
 
