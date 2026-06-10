@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { OutlineNode, ReviewComment } from '../../db/indexedDB';
 import { ChevronRight, ChevronLeft, ChevronDown, Trash2, PlusCircle, HelpCircle, CheckCircle2, ArrowUp, ArrowDown, MessageSquare, Check } from 'lucide-react';
+import { MathJaxRenderer } from './MathJaxRenderer';
 
 interface OutlineLineItemProps {
   node: OutlineNode;
@@ -221,7 +222,15 @@ export const OutlineLineItem: React.FC<OutlineLineItemProps> = ({
         </span>
 
         {/* Input Surface */}
-        {!isActive && shouldHighlight ? (
+        {!isActive && (node.type === 'question' || node.type === 'answer') && node.text ? (
+          <MathJaxRenderer
+            text={node.text}
+            className={`flex-grow py-1 cursor-text select-none min-h-[28px] whitespace-pre-wrap break-words ${getLineStyles()}`}
+            style={{ lineHeight: `${editorLineHeight}` }}
+            renderHighlightText={shouldHighlight ? renderHighlightText : undefined}
+            onClick={() => onFocus(index)}
+          />
+        ) : !isActive && shouldHighlight ? (
           <div
             onClick={() => onFocus(index)}
             className={`flex-grow py-1 cursor-text select-none min-h-[28px] whitespace-pre-wrap break-words ${getLineStyles()}`}

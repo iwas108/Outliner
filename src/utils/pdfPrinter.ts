@@ -36,12 +36,12 @@ export function printOutline(project: Project): void {
   const {
     pageSize = 'A4',
     orientation = 'portrait',
-    margins = { top: 10, bottom: 20, left: 20, right: 20 },
+    margins = { top: 20, bottom: 20, left: 20, right: 20 },
     maxLevel = 12,
     includeHighlighting = false,
     lineSpacing = 1.5,
-    lineHeight = 1.4,
-    indentSpacing = 10,
+    lineHeight = 1.2,
+    indentSpacing = 8,
     levelHighlighting = {},
     levelLineSpacing = {},
     levelLineHeight = {},
@@ -283,6 +283,41 @@ ${indentStyles}
     <head>
       <title>${escapeHtml(safeFilename)}</title>
       <style>${styles}</style>
+      <!-- Local MathJax Configuration & Loader -->
+      <script>
+        window.printed = false;
+        function triggerPrint() {
+          if (!window.printed) {
+            window.printed = true;
+            window.print();
+            window.parent.postMessage({ type: 'OUTLINER_PRINT_DONE' }, '*');
+          }
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+          // Fallback: trigger print after 3 seconds in case MathJax fails to load/typeset
+          setTimeout(triggerPrint, 3000);
+        });
+
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+            displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+            processEscapes: true
+          },
+          options: {
+            skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+          },
+          startup: {
+            pageReady: () => {
+              return MathJax.startup.defaultPageReady().then(() => {
+                setTimeout(triggerPrint, 200);
+              });
+            }
+          }
+        };
+      </script>
+      <script id="MathJax-script" async src="mathjax/tex-mml-chtml.js"></script>
     </head>
     <body>
       <div class="header">
@@ -332,29 +367,28 @@ ${indentStyles}
   const originalHostTitle = document.title;
   document.title = safeFilename;
 
+  // Listen to postMessage from the iframe when printing is done
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data && event.data.type === 'OUTLINER_PRINT_DONE') {
+      cleanup();
+    }
+  };
+  window.addEventListener('message', handleMessage);
+
+  const cleanup = () => {
+    window.removeEventListener('message', handleMessage);
+    document.title = originalHostTitle;
+    if (document.body.contains(iframe)) {
+      document.body.removeChild(iframe);
+    }
+  };
+
+  // Safe fallback cleanup after 12 seconds in case printing is slow or cancelled
+  setTimeout(cleanup, 12000);
+
   doc.open();
   doc.write(htmlContent);
   doc.close();
-
-  // Wait for styles/resources to resolve and print
-  setTimeout(() => {
-    try {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-    } catch (err) {
-      console.error('Print dialogue error:', err);
-    }
-
-    // Restore host title
-    document.title = originalHostTitle;
-
-    // Remove element after dialog handles print
-    setTimeout(() => {
-      if (document.body.contains(iframe)) {
-        document.body.removeChild(iframe);
-      }
-    }, 1000);
-  }, 500);
 }
 
 function escapeHtml(str: string): string {

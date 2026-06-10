@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { getKeywordColors } from '../../utils/analyzer';
+import { MathJaxRenderer } from './MathJaxRenderer';
 
 interface ExportViewProps {
   project: Project;
@@ -366,9 +367,17 @@ CRITICAL RULES:
                         >
                           <span className="text-[9px] font-bold text-slate-400/80 mr-0.5">{prefix}</span>
                           {node.text ? (
-                            isHighlightEnabled
-                              ? renderMockupHighlight(node.text, node.depth, node.id)
-                              : node.text
+                            node.type === 'question' || node.type === 'answer' ? (
+                              <MathJaxRenderer
+                                text={node.text}
+                                className="inline"
+                                renderHighlightText={isHighlightEnabled ? (txt) => renderMockupHighlight(txt, node.depth, node.id) : undefined}
+                              />
+                            ) : isHighlightEnabled ? (
+                              renderMockupHighlight(node.text, node.depth, node.id)
+                            ) : (
+                              node.text
+                            )
                           ) : (
                             <span className="text-slate-300 italic">(Empty Line)</span>
                           )}

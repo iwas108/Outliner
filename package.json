@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build && mv dist/app.html dist/index.html",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "mkdir -p public/mathjax && cp -r node_modules/mathjax/* public/mathjax/"
   },
   "dependencies": {
     "compromise": "^14.15.1",
     "docx": "^9.7.1",
     "lucide-react": "^1.17.0",
+    "mathjax": "^4.1.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

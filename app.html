@@ -25,6 +25,31 @@
     <meta property="twitter:title" content="Outliner App - Structured Academic & Research Writing IDE" />
     <meta property="twitter:description" content="Launch the Outliner app: A privacy-first, offline-ready academic writing IDE aligned with FAIR data standards. Build outlines, run real-time structure checks, and export custom PDFs." />
     <meta property="twitter:image" content="https://iwas108.github.io/Outliner/docs/images/Outliner_editing_page.jpg" />
+
+    <!-- Local MathJax Configuration & Loader -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+          displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+          processEscapes: true
+        },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        },
+        startup: {
+          typeset: false
+        }
+      };
+
+      (function() {
+        var script = document.createElement('script');
+        script.id = 'MathJax-script';
+        script.async = true;
+        script.src = 'mathjax/tex-mml-chtml.js';
+        document.head.appendChild(script);
+      })();
+    </script>
   </head>
   <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased">
     <div id="root"></div>

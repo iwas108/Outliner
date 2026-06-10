@@ -139,6 +139,7 @@ src/
 │       ├── OutlineLineItem.tsx   // Inline comment popover on lines with review feedback
 │       ├── AnalysisSidebar.tsx   // Editor Options + Critique Feed + Diagnostics + Version Timeline
 │       ├── ExportView.tsx
+│       ├── MathJaxRenderer.tsx   // MathJax typeset renderer for Question and Answer fields
 │       ├── PasteReviewModal.tsx
 │       └── CommitModal.tsx
 ├── context/
@@ -177,9 +178,7 @@ src/
 6. **Nesting Structure Guide Lines**: Draws thin, theme-sensitive vertical borders (`border-l border-slate-200/60 dark:border-slate-800/50`) absolutely positioned at the midpoint of each indentation level gap (`12 + i * spacing + spacing / 2`). This visually maps nested tree paths. Toggled via the "Show Structure Line" option in the right-side Editor Options panel and the structure line toggle button inside the fullscreen view's floating controls dock.
 7. **Collapsible Section and Topic Levels**: Render Chevron toggles next to Section and Topic node headers. Tapping these collapses or expands all nested descendant elements, facilitating clean outline viewing.
 8. **Collapsed Warnings by Default**: The fullscreen diagnostics warnings panel starts collapsed by default, requiring a manual click to view to prevent distracting layout shifts.
-
-
-
+9. **MathJax Rendering**: Question and Answer fields render LaTeX mathematical notation using a local MathJax build when they are unfocused (`isActive === false`), while focusing a field displays the raw text for convenient editing.
 
 ---
 
@@ -189,6 +188,7 @@ src/
 - **Symmetric Margins**: Allows users to specify page margins in millimeters (0-100mm) saved directly to project metadata.
 - **Line Spacing & Line Height Layouts**: Supports separate, per-level formatting controls for Line Spacing (controlling vertical space/margin *between* outline items) and Line Height (controlling CSS `line-height` *within* wrapped text lines).
 - **IFrame Print Hijacking**: Spawns a temporary hidden `<iframe>` element, writes a standard page configuration using CSS `@page` parameters (setting size, margins, and orientation dynamically), and calls native `window.print()` inside it. This forces the browser to open a print dialog that compiles vector text PDFs, applying all margins, line spacings, and line heights. Sets the printable document title and temporarily overrides the host page title to enforce custom file names in the print-to-PDF save dialog.
+- **MathJax Typesetting & Print Interceptor**: Injects a local MathJax configuration and scripts inside the print iframe. Bypasses the parent-level print caller and captures typesetting events asynchronously inside the iframe. Triggers the print sequence only when typesetting resolves, and posts messages back to parent event listeners to perform structural cleanup and restore document headers.
 - **Visual Page Mockups**: A CSS page simulator rendering layout sizes (A4, Letter, A5, Legal) with landscape/portrait orientation flips, displaying the margins in real-time as scaled padding, and formatting layout spacing proportionally via custom css styles.
 - **Formatted Metadata & Custom Footers**: Styles metadata display items as cards with indigo left-accent borders (`border-left: 3px solid #6366f1`) and light backgrounds. Injects a custom footer at the bottom of printed pages utilizing native CSS `@page` margin boxes (`@bottom-left` for branding, `@bottom-center` for revision/commit information, and `@bottom-right` for native page counts `Page X / Y`) styled with divider borders.
 
