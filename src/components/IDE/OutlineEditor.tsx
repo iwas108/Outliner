@@ -3,12 +3,13 @@ import type { OutlineNode, ReviewComment, ProjectCommit } from '../../db/indexed
 import { OutlineLineItem } from './OutlineLineItem';
 import { PasteReviewModal } from './PasteReviewModal';
 import { CommitModal } from './CommitModal';
+import { CookbookModal } from './CookbookModal';
 import { canIndent, canOutdent, getNodeTypeForDepth, validateOutlineTree } from '../../utils/outlineRules';
 import { check5W1H, checkKeywordChaining } from '../../utils/analyzer';
 import { 
   Plus, ListTodo, Maximize2, Minimize2, ShieldCheck, AlertCircle, Eye, EyeOff, 
   ChevronUp, ChevronDown, ListTree, Sparkles, MessageSquare, MessageSquareCode,
-  GitCommit, GitBranch, RotateCcw, Check, CheckCircle, Settings2
+  GitCommit, GitBranch, RotateCcw, Check, CheckCircle, Settings2, BookOpen
 } from 'lucide-react';
 
 interface OutlineEditorProps {
@@ -78,6 +79,7 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   // Fullscreen modals
   const [showFullscreenPasteModal, setShowFullscreenPasteModal] = useState(false);
   const [showFullscreenCommitModal, setShowFullscreenCommitModal] = useState(false);
+  const [showCookbookModal, setShowCookbookModal] = useState(false);
 
   // Fullscreen fork state
   const [fsForkingCommit, setFsForkingCommit] = useState<ProjectCommit | null>(null);
@@ -766,6 +768,17 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
             <ListTree className="w-3.5 h-3.5" />
             <span>Structure Lines</span>
           </button>
+
+          {/* Cookbook Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowCookbookModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold transition-all cursor-pointer bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+            title="Open Outlining Cookbook"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Cookbook</span>
+          </button>
         </div>
       </div>
 
@@ -877,6 +890,10 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
           />
         )}
 
+        {showCookbookModal && (
+          <CookbookModal onClose={() => setShowCookbookModal(false)} />
+        )}
+
         {/* Fullscreen Fork Modal */}
         {fsForkingCommit && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
@@ -929,12 +946,18 @@ export const OutlineEditor: React.FC<OutlineEditorProps> = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      onMouseDown={() => setFocusedIndex(null)}
-      className="w-full max-w-3xl mx-auto min-h-[500px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-2xl shadow-xl flex flex-col p-8 sm:p-12 relative transition-all"
-    >
-      {editorSheetContent}
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        onMouseDown={() => setFocusedIndex(null)}
+        className="w-full max-w-3xl mx-auto min-h-[500px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-2xl shadow-xl flex flex-col p-8 sm:p-12 relative transition-all"
+      >
+        {editorSheetContent}
+      </div>
+
+      {showCookbookModal && (
+        <CookbookModal onClose={() => setShowCookbookModal(false)} />
+      )}
+    </>
   );
 };
