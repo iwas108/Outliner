@@ -179,4 +179,7 @@ This log records features, fixes, and architectural adjustments completed on the
 - **Bug**: The fixed-position PDF footer (`position: fixed; bottom: 0;`) was rendering at the bottom of the page content box. As a result, the bottom-most outline text on each page would flow right down and overlap the footer text.
 - **Fix**: Synchronized the footer placement with the user-defined page margins. Changed the CSS positioning of `.page-footer` in [pdfPrinter.ts](file:///home/madman/github/Outliner/src/utils/pdfPrinter.ts) to `bottom: -${margins.bottom - 6}mm`. This shifts the fixed footer downward into the bottom margin area (completely outside the page content box). Since the browser naturally triggers page breaks when normal flow text reaches the edge of the page content box, outline text will never flow into the margin area, eliminating the overlap.
 
+### 30. Outlining Cookbook Modal (Current)
+- **CookbookModal Component**: Created a new `CookbookModal.tsx` file inside `src/components/IDE/` to display rules and best practices for creating outlines. It details structural hierarchy rules, 5W1H formulation syntax, keyword chaining mechanics, and tips for scientific papers.
+- **OutlineEditor Integration**: Added a "Cookbook" toggle button (using the `BookOpen` icon) in `OutlineEditor.tsx`'s view toolbar next to the "Structure Lines" toggle.
 

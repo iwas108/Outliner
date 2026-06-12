@@ -141,7 +141,8 @@ src/
 │       ├── ExportView.tsx
 │       ├── MathJaxRenderer.tsx   // MathJax typeset renderer for Question and Answer fields
 │       ├── PasteReviewModal.tsx
-│       └── CommitModal.tsx
+│       ├── CommitModal.tsx
+│       └── CookbookModal.tsx     // Best practices & outline rule documentation UI
 ├── context/
 │   └── ThemeContext.tsx
 ├── db/
