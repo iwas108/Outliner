@@ -173,10 +173,6 @@ ${v}
       text-decoration: none;
       font-weight: 600;
     }
-    /* CSS counter for page numbers inside the fixed footer */
-    .page-footer-page::after {
-      content: "Page " counter(page) " / " counter(pages);
-    }
   `,T=a.map(e=>{let t=`node-answer`,n=``;e.type===`section`?t=`node-section`:e.type===`topic`?t=`node-topic`:e.type===`question`?(t=`node-question`,n=`<span style="color: #6366f1; font-weight: 700; margin-right: 4px;">Q:</span>`):e.type===`answer`&&(t=`node-answer`,n=`<span style="color: #64748b; font-weight: 700; margin-right: 4px;">A:</span>`);let r=e.text?x(e.text,e.depth,e.id):my(`(Empty Line)`);return`
         <div class="outline-node ${t} depth-${e.depth} line-spacing-${e.depth}">
           ${n}${r}
@@ -278,7 +274,6 @@ ${v}
       <div class="page-footer">
         <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner (https://iwas108.github.io/Outliner) &#8599;</a>
         <span>${my(S)}</span>
-        <span class="page-footer-page"></span>
       </div>
 
     </body>
