@@ -243,10 +243,6 @@ ${indentStyles}
       text-decoration: none;
       font-weight: 600;
     }
-    /* CSS counter for page numbers inside the fixed footer */
-    .page-footer-page::after {
-      content: "Page " counter(page) " / " counter(pages);
-    }
   `;
 
   // Format nodes as HTML
@@ -380,7 +376,6 @@ ${indentStyles}
       <div class="page-footer">
         <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner (https://iwas108.github.io/Outliner) &#8599;</a>
         <span>${escapeHtml(revisionText)}</span>
-        <span class="page-footer-page"></span>
       </div>
 
     </body>

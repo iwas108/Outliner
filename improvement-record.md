@@ -187,3 +187,7 @@ This log records features, fixes, and architectural adjustments completed on the
 ### 31. Failproof PDF Footer Table Layout Fix (Current)
 - **Bug**: The previous margin offset hack (`bottom: -${margins.bottom - 6}mm`) for `.page-footer` failed to properly keep outline text from overlapping the PDF footer at page breaks.
 - **Fix**: Implemented a failproof table-based spacer layout in `pdfPrinter.ts`. Wrapped the main `outline-container` content inside a standard `<table>` element and added a fixed-height (`8mm`) `<tfoot>` spacer. The native browser print renderer guarantees that standard table headers and footers are cleanly isolated on every printed page, establishing a reserved protected area at the bottom. The `.page-footer` was then changed back to `bottom: 0` inside the main layout, fitting safely into the newly reserved and untouchable page space to prevent text overlap completely.
+
+### 32. Remove CSS counter for custom PDF Page Numbering
+- **Bug**: The custom page number in the fixed footer of the PDF export (`0 / 0`) was not rendering correctly because CSS `counter(page)` and `counter(pages)` are not fully supported for standard `window.print()` in modern browsers like Chrome.
+- **Fix**: Dropped the technically unfeasible custom page number element (`<span class="page-footer-page"></span>`) from `src/utils/pdfPrinter.ts` and its associated CSS styling. Left the "Made with Outliner" link and revision text in the footer, which now perfectly align using the existing `justify-content: space-between` layout.
