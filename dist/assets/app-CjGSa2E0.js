@@ -46,7 +46,6 @@ Error generating stack: `+e.message+`
       color: #1e293b;
       margin: 0;
       padding: 0;
-      padding-bottom: 15mm;
     }
     .header {
       margin-bottom: 30px;
@@ -144,9 +143,10 @@ ${y}
 ${v}
     .page-footer {
       position: fixed;
-      bottom: -${c.bottom-6}mm;
+      bottom: 0;
       left: 0;
       right: 0;
+      height: 8mm; /* matches footer-space */
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -159,6 +159,14 @@ ${v}
       font-weight: 550;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .footer-space {
+      height: 8mm;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
     }
     .page-footer a {
       color: #6366f1;
@@ -247,9 +255,25 @@ ${v}
           </div>
         </div>
       </div>
-      <div class="outline-container">
-        ${T}
-      </div>
+      <table>
+        <thead><tr><td></td></tr></thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="outline-container">
+                ${T}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>
+              <div class="footer-space">&nbsp;</div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
 
       <div class="page-footer">
         <a href="https://iwas108.github.io/Outliner" target="_blank" rel="noopener">Made with Outliner (https://iwas108.github.io/Outliner) &#8599;</a>

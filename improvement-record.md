@@ -183,3 +183,7 @@ This log records features, fixes, and architectural adjustments completed on the
 - **CookbookModal Component**: Created a new `CookbookModal.tsx` file inside `src/components/IDE/` to display rules and best practices for creating outlines. It details structural hierarchy rules, 5W1H formulation syntax, keyword chaining mechanics, and tips for scientific papers.
 - **OutlineEditor Integration**: Added a "Cookbook" toggle button (using the `BookOpen` icon) in `OutlineEditor.tsx`'s view toolbar next to the "Structure Lines" toggle.
 
+
+### 31. Failproof PDF Footer Table Layout Fix (Current)
+- **Bug**: The previous margin offset hack (`bottom: -${margins.bottom - 6}mm`) for `.page-footer` failed to properly keep outline text from overlapping the PDF footer at page breaks.
+- **Fix**: Implemented a failproof table-based spacer layout in `pdfPrinter.ts`. Wrapped the main `outline-container` content inside a standard `<table>` element and added a fixed-height (`8mm`) `<tfoot>` spacer. The native browser print renderer guarantees that standard table headers and footers are cleanly isolated on every printed page, establishing a reserved protected area at the bottom. The `.page-footer` was then changed back to `bottom: 0` inside the main layout, fitting safely into the newly reserved and untouchable page space to prevent text overlap completely.
